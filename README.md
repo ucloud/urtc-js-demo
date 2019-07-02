@@ -88,10 +88,10 @@ URtcEngine.joinRoom({
 ## 4，获取本地音视频流
 ``` 
 URtcEngine.getLocalStream({  
-    media_data:’videoProfile640*360’,//推流相关配置的属性（分辨率宽度*分辨率高度）  
-    video_enable:true,//是否采集视频  
-    audio_enable:true,//是否采集音频  
-    media_type:1 //MediaType 1 cam 2 desktop  
+	media_data:’videoProfile640*360’,//推流相关配置的属性（分辨率宽度*分辨率高度）  
+	video_enable:true,//是否采集视频  
+	audio_enable:true,//是否采集音频  
+	media_type:1 //MediaType 1 cam 2 desktop  
 }).then(function(data){  
    //音视频流数据  
 },function(e){  
@@ -102,8 +102,8 @@ URtcEngine.getLocalStream({
 ## 5，发布本地流
 ``` 
 URtcEngine.leaveRoom({  
-    user_id:user_id,//用户id  
-    media_type:1,//发布的流类型 1 摄像头 2桌面  
+	user_id:user_id,//用户id  
+	media_type:1,//发布的流类型 1 摄像头 2桌面  
 	audio: true,//是否包含音频流  
 	video:true,//是否包含视频流  
 	data:false//是否包含数据流  
@@ -117,7 +117,7 @@ URtcEngine.leaveRoom({
 ## 6,订阅远端流 
 ``` 
 URtcEngine.subscribe({  
-    media_type: 1,//订阅的流类型 1 摄像头 2桌面  
+	media_type: 1,//订阅的流类型 1 摄像头 2桌面  
 	stream_id: “stream_id”,//订阅流id  
 	user_id: “user_id",//订阅用户id  
 },{  
@@ -126,7 +126,7 @@ URtcEngine.subscribe({
 }).then(function(e){  
     //发布成功  
 },function(err){  
-     //发布失败  
+    //发布失败  
 }); 
 ```
 
@@ -135,7 +135,7 @@ URtcEngine.subscribe({
 URtcEngine.getAudioVolum().then(function(data){  
      //音量数据  
  },function(err){  
-	//错误信息  
+ 	//错误信息  
 });
 ```
 
