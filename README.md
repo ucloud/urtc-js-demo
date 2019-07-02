@@ -54,15 +54,15 @@ URTCJs 是UCloud推出的一款适用于 web 平台的实时音视频 SDK，
 线上开展音视频对话，对客户的资信情况进行审核，方便金融科技企业实现用户在线签约、视频开户验证以及呼叫中心等功能
 提供云端存储空间及海量数据的处理能力，提供高可用的技术和高稳定的平台
 
-#实现流程
+# 实现流程
 以下是简单的SDK调用流程，详细API接口请参考接口文档
 
-##1，集成SDK
+## 1，集成SDK
 可使用script直接引入
  <script src="urtcsdk-1.0.1.js"></script>
 
 
-##2，初始化SDK
+## 2，初始化SDK
 var URtcEngine = new URtcEngine();  
 URtcEngine.init({  
         app_id: appData.appId,//项目的appid  
@@ -74,15 +74,16 @@ URtcEngine.init({
 })  
 
 
-##3，登陆房间
+## 3，登陆房间
 URtcEngine.joinRoom({  
     token: getToken//初始化时获得的token  
 }).then(function(e){  
     //加入房间成功  
 },function(err){  
     //加入房间失败  
-})  
-##4，获取本地音视频流
+})
+
+## 4，获取本地音视频流
 URtcEngine.getLocalStream({  
     media_data:’videoProfile640*360’,//推流相关配置的属性（分辨率宽度*分辨率高度）  
     video_enable:true,//是否采集视频  
@@ -92,8 +93,9 @@ URtcEngine.getLocalStream({
    //音视频流数据  
 },function(e){  
     //错误信息  
-})  
-##5，发布本地流
+})
+
+## 5，发布本地流
 URtcEngine.leaveRoom({  
     user_id:user_id,//用户id  
     media_type:1,//发布的流类型 1 摄像头 2桌面  
@@ -106,7 +108,7 @@ URtcEngine.leaveRoom({
      //发布失败  
 });  
 
-##6,订阅远端流 
+## 6,订阅远端流 
 URtcEngine.subscribe({  
     media_type: 1,//订阅的流类型 1 摄像头 2桌面  
 	stream_id: “stream_id”,//订阅流id  
@@ -115,18 +117,19 @@ URtcEngine.subscribe({
 	audio_enable: true,//是否包含音频流  
 	video_enable: true//是否包含数据流  
 }).then(function(e){  
-            //发布成功  
-        },function(err){  
-             //发布失败  
-        });  
-##7，获取本地音量数据
+    //发布成功  
+},function(err){  
+     //发布失败  
+}); 
+
+## 7，获取本地音量数据
 URtcEngine.getAudioVolum().then(function(data){  
      //音量数据  
  },function(err){  
 	//错误信息  
 })  
 
-##8，关闭/打开本地音视频
+## 8，关闭/打开本地音视频
 URtcEngine.activeMute({  
         stream_id: stream_id,//媒流id   
         stream_type: 1,//1 发布流 2 订阅流  
@@ -139,7 +142,7 @@ URtcEngine.activeMute({
 		//错误信息  
 });  
 
-##9，枚举本地媒体设备
+## 9，枚举本地媒体设备
 URtcEngine.getLocalDevices().then(function(e){  
     //成功输出本地设备数据  
   	//microphones 音频输入设备列表	  
@@ -150,7 +153,7 @@ URtcEngine.getLocalDevices().then(function(e){
     //失败  
 })  
 
-##10，离开房间
+## 10，离开房间
 URtcEngine.leaveRoom({  
     room_id: room_id//房间id  
 }).then(function(e){  
