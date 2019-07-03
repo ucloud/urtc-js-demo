@@ -101,7 +101,7 @@ function joinRoom(){
     }
 }
 joinRoom(); 
-let URtcDemo = new URtcEngine();
+let URtcDemo = new UCloudRtcEngine();
 URtcDemo.getLocalDevices().then(function(e){
     console.log('test audio')
     console.log(e)

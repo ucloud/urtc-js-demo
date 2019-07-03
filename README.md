@@ -63,8 +63,8 @@ URTCJs 是UCloud推出的一款适用于 web 平台的实时音视频 SDK，
 
 ## 2，初始化SDK
 ``` 
-var URtcEngine = new URtcEngine();  
-URtcEngine.init({  
+var UCloudRtcEngine = new UCloudRtcEngine();  
+UCloudRtcEngine.init({  
         app_id: appData.appId,//项目的appid  
         room_id: appData.roomId,//进入的房间id  
         user_id: appData.userId,//用户的id  
@@ -76,7 +76,7 @@ URtcEngine.init({
 
 ## 3，登陆房间
 ``` 
-URtcEngine.joinRoom({  
+UCloudRtcEngine.joinRoom({  
     token: getToken//初始化时获得的token  
 }).then(function(e){  
     //加入房间成功  
@@ -87,7 +87,7 @@ URtcEngine.joinRoom({
 
 ## 4，获取本地音视频流
 ``` 
-URtcEngine.getLocalStream({  
+UCloudRtcEngine.getLocalStream({  
 	media_data:’videoProfile640*360’,//推流相关配置的属性（分辨率宽度*分辨率高度）  
 	video_enable:true,//是否采集视频  
 	audio_enable:true,//是否采集音频  
@@ -101,7 +101,7 @@ URtcEngine.getLocalStream({
 
 ## 5，发布本地流
 ``` 
-URtcEngine.leaveRoom({  
+UCloudRtcEngine.leaveRoom({  
 	user_id:user_id,//用户id  
 	media_type:1,//发布的流类型 1 摄像头 2桌面  
 	audio: true,//是否包含音频流  
@@ -116,7 +116,7 @@ URtcEngine.leaveRoom({
 
 ## 6,订阅远端流 
 ``` 
-URtcEngine.subscribe({  
+UCloudRtcEngine.subscribe({  
 	media_type: 1,//订阅的流类型 1 摄像头 2桌面  
 	stream_id: “stream_id”,//订阅流id  
 	user_id: “user_id",//订阅用户id  
@@ -132,7 +132,7 @@ URtcEngine.subscribe({
 
 ## 7，获取本地音量数据
 ``` 
-URtcEngine.getAudioVolum().then(function(data){  
+UCloudRtcEngine.getAudioVolum().then(function(data){  
      //音量数据  
  },function(err){  
  	//错误信息  
@@ -141,7 +141,7 @@ URtcEngine.getAudioVolum().then(function(data){
 
 ## 8，关闭/打开本地音视频
 ``` 
-URtcEngine.activeMute({  
+UCloudRtcEngine.activeMute({  
         stream_id: stream_id,//媒流id   
         stream_type: 1,//1 发布流 2 订阅流  
         user_id:user_id,//用户id  
@@ -156,7 +156,7 @@ URtcEngine.activeMute({
 
 ## 9，枚举本地媒体设备
 ``` 
-URtcEngine.getLocalDevices().then(function(e){  
+UCloudRtcEngine.getLocalDevices().then(function(e){  
     //成功输出本地设备数据  
   	//microphones 音频输入设备列表	  
 	//speakers 音频输出设备列表  
@@ -169,7 +169,7 @@ URtcEngine.getLocalDevices().then(function(e){
 
 ## 10，离开房间
 ``` 
-URtcEngine.leaveRoom({  
+UCloudRtcEngine.leaveRoom({  
     room_id: room_id//房间id  
 }).then(function(e){  
     //退出成功  
