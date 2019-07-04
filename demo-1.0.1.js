@@ -1,7 +1,5 @@
-import './style/urtcdemo.css'
-import {URtcEngine} from './vendor/urtcsdk';
 
-// import adapter from 'webrtc-adapter';
+var UCloudRtcEngine = UCloudRtcEngine.UCloudRtcEngine;
 
 let appData = {
     appId: 'URtc-h4r1txxy',

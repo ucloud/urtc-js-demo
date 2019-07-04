@@ -59,7 +59,14 @@ URTCJs 是UCloud推出的一款适用于 web 平台的实时音视频 SDK，
 
 ## 1，集成SDK
 可使用script直接引入
+## 2，初始化SDK
+```
  <script src="urtcsdk-1.0.1.js"></script>  
+ ``` 
+ 或者
+ ``` 
+ import {UCloudRtcEngine} from 'UCloudRtcEngine';
+ ``` 
 
 ## 2，初始化SDK
 ``` 
