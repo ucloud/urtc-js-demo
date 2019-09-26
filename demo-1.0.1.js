@@ -3,8 +3,10 @@ var UCloudRtcEngine = UCloudRtcEngine.UCloudRtcEngine;
 
 let appData = {
     appId: 'URtc-h4r1txxy',
-    userId:randNum(3),
-    mediaType:'1'//桌面和摄像头采集类型
+    userId: randNum(3),
+    mediaType: '1', //桌面和摄像头采集类型
+    appkey: '9129304dbf8c5c4bf68d70824462409f',
+    
 };
 
 // let UserId = randNum(3);
@@ -112,48 +114,58 @@ function appInit(){
     
     // URtcEngine.init()
     // URtcDemo.init(appData.url, appData.mediaType, appData.localVideo, ['box1', 'box2', 'box3', 'box4', 'box5'], {width: {ideal: 1280}, height: {ideal: 640}}, 12);
-    
-    URtcDemo.init({
+    URtcDemo.getToken({
         app_id: appData.appId,
         room_id: appData.roomId,
         user_id: appData.userId,
-    }).then(function(data){
-        let getToken = data.token;
-
-        URtcDemo.getLocalStream({
-            media_data:'videoProfile640*360',
-            video_enable:true,
-            audio_enable:true,
-            media_type:1 //MediaType 1 cam 2 desktop
+        appkey: appData.appkey
+      }).then(function(data) {
+        let getToken = data;
+        URtcDemo.init({
+            app_id: appData.appId,
+            room_id: appData.roomId,
+            role_type: 2,
+            room_type: 0,
+            user_id: appData.userId,
+            token: getToken,
         }).then(function(data){
-            let videoElement = document.getElementById('localVideo');
-            let video = videoElement.querySelector('video')
-            videoElement.style.display = 'block';
-            video.srcObject = data;
-        },function(e){
-            console.log('getLocalStreamerror')
-            console.log(e)
-        })
-        
-        setInterval(() => {
-            URtcDemo.getAudioVolum().then(function(data){
-                let volum = data*100;
-                document.getElementById("audioVolum").value = volum;
-
+            console.log(1111)
+            console.log(data)
+            URtcDemo.getLocalStream({
+                media_data:'videoProfile640*360',
+                video_enable:true,
+                audio_enable:true,
+                media_type:1 //MediaType 1 cam 2 desktop
+            }).then(function(data){
+                let videoElement = document.getElementById('localVideo');
+                let video = videoElement.querySelector('video')
+                videoElement.style.display = 'block';
+                video.srcObject = data;
+                    URtcDemo.joinRoom({
+                        token: getToken,
+                        role_type: 2, //用户权限0 推流 1 拉流 2 全部
+                        room_type: 0
+                    }).then(function(e){
+                        console.log(e)
+                    },function(err){
+                        console.log(err)
+                    })
+            },function(e){
+                console.log('getLocalStreamerror')
+                console.log(e)
             })
-          }, 1000);
-
-        URtcDemo.joinRoom({
-            token: getToken
-        }).then(function(e){
-            console.log(e)
-        },function(err){
-            console.log(err)
+            setInterval(() => {
+                URtcDemo.getAudioVolum().then(function(data){
+                    let volum = data*100;
+                    document.getElementById("audioVolum").value = volum;
+                })
+              }, 1000);
+    
+        },function(error){
+            console.log('init',error)
         })
-
-    },function(error){
-        console.log('init',error)
-    })
+      })
+    
     
     URtcDemo.addEventListener('userJoin', userJoin);
     URtcDemo.addEventListener('userLeave', userLeave);
