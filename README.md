@@ -54,14 +54,20 @@ URTCJs 是UCloud推出的一款适用于 web 平台的实时音视频 SDK，
 线上开展音视频对话，对客户的资信情况进行审核，方便金融科技企业实现用户在线签约、视频开户验证以及呼叫中心等功能
 提供云端存储空间及海量数据的处理能力，提供高可用的技术和高稳定的平台
 
-# 实现流程
-以下是简单的SDK调用流程，详细API接口请参考接口文档
+# 5 Demo运行
+```
+npm install //安装依赖
+npm run start //运行Demo
+npm run build //打包Demo
+``` 
 
+# 6 实现流程
+以下是简单的SDK调用流程，详细API接口请参考接口文档
 
 ## 1，引入SDK
 ```
- import {URtcDemo} from 'UCloudRtcEngine';
- ``` 
+import {URtcDemo} from 'UCloudRtcEngine';
+``` 
 
 ## 2，初始化
 ``` 
