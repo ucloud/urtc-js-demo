@@ -57,7 +57,9 @@ URTCJs 是UCloud推出的一款适用于 web 平台的实时音视频 SDK，
 # 5 Demo运行
 ```
 npm install //安装依赖
+
 npm run start //运行Demo
+
 npm run build //打包Demo
 ``` 
 
@@ -134,11 +136,11 @@ URtcDemo.joinRoom({
 ## 7，发布本地流
 ``` 
 URtcDemo.publish({  
-	user_id:user_id,//用户id  
-	media_type:1,//发布的流类型 1 摄像头 2桌面  
-	audio: true,//是否包含音频流 true/false
-	video:true,//是否包含视频流 true/false
-	data:false//是否包含数据流 true/false
+    user_id:user_id,//用户id  
+    media_type:1,//发布的流类型 1 摄像头 2桌面  
+    audio: true,//是否包含音频流 true/false
+    video:true,//是否包含视频流 true/false
+    data:false//是否包含数据流 true/false
 }).then(function(e){  
     //发布信息 
 }).catch(function(err){
@@ -190,10 +192,10 @@ URtcDemo.activeMute({
 ``` 
 URtcDemo.getLocalDevices().then(function(e){  
     //成功输出本地设备数据  
-  	//microphones 音频输入设备列表	  
-	//speakers 音频输出设备列表  
-	//cameras 视频输输入设备列表  
-	//设备列表中的每一个元素类型相同（label：设备名称，deviceId：设备Id）  	
+    //microphones 音频输入设备列表	  
+    //speakers 音频输出设备列表  
+    //cameras 视频输输入设备列表  
+    //设备列表中的每一个元素类型相同（label：设备名称，deviceId：设备Id）  	
 }).catch(function(err){
     //报错信息 
 });
