@@ -1,0 +1,104 @@
+.nav_main{
+    width: 100%;
+    height: 42px;
+    background-color: #3860f4;
+    position: relative;
+    z-index: 100;
+    box-sizing: border-box;
+    color: #f9faff;
+    overflow: hidden;
+    .name_wrapper{
+        display: inline-block;
+        height: 100%;
+        background-size: 100%;
+        vertical-align: middle;
+        margin-right: 20px;
+        margin-left: 120px;
+    } 
+    .nav_btn{
+        display: inline-block;
+        height: 100%;
+        font-size: 12px;
+        line-height: 42px;
+        cursor: pointer;
+        vertical-align: middle;
+        width: 60px;
+        text-align: center;
+        >b{
+            width:16px;
+            height:16px;
+            font-size: 12px;
+            background-color: #fff;
+            text-align: center;
+            display: inline-block;
+            border-radius: 50%;
+            vertical-align: middle;
+            color: rgba(17, 102, 228, 1);
+            margin-right: 6px;
+            i{
+                margin-left: 0px;
+                vertical-align: top;
+                margin-top: 2px;
+            }
+        }
+    }
+    .out_btn_wrapper{
+        height: 100%;
+        width: 100%;
+        position: relative;
+        height: 42px;
+        line-height: 42px;
+        box-sizing: border-box;
+        padding-right: 16px;
+
+    }
+    .icon_wrapper{
+        position: absolute;
+        cursor: pointer;
+        top:0px;
+        left: 0;
+        width: 119px;
+        height: 30px;
+        padding-top: 13px;
+        padding-left: 10px;
+        background-repeat: no-repeat;
+        background-position-y: 14px;
+        background-position-x: 0px;
+        vertical-align: middle;
+      
+        margin-right: 20px;
+        background-size: contain;
+        background-color: #0C5ACD;
+        .icon_wrapper_contain{
+            background-size: 100%;
+            background-image: url(../../common/img/cli.png);
+            position: absolute;
+            top: 14px;left: 5px;
+            width: 119px;
+            height: 18px;
+        background-repeat: no-repeat;
+
+        }
+    }
+    .nav_title{
+        vertical-align: top;
+        text-align: left;
+        height: 42px;
+        box-sizing: border-box;
+        padding-left: 15px;
+        line-height: 42px;
+        font-weight: bold;
+        font-size: 14px;
+        p {
+            margin: 0;
+        }
+    }
+    .white-board {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background-color:red;
+    }
+}

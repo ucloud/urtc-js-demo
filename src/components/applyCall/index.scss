@@ -1,0 +1,23 @@
+.applyCall_main{
+    position: absolute;
+    top: 31px;
+    right: 0px;
+    width: 100%;
+    z-index: 1000;
+    height: 30px;
+    font-size:12px;
+    line-height: 30px;
+    color: #ffffff;
+    background-color: #3D5474;
+    cursor: pointer;
+    .icon_wrapper{
+        font-size: 14px;
+        margin: 0 5px 0 9px;
+    }
+    .applyCall_main_wrapper_btn{
+        width: 115px;
+    }
+    .w100{
+        width: 100%;
+    }
+}

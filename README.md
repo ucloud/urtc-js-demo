@@ -57,130 +57,177 @@ URTCJs 是UCloud推出的一款适用于 web 平台的实时音视频 SDK，
 # 实现流程
 以下是简单的SDK调用流程，详细API接口请参考接口文档
 
-## 1，集成SDK
-可使用script直接引入
-## 2，初始化SDK
+
+## 1，引入SDK
 ```
- <script src="urtcsdk-1.0.1.js"></script>  
- ``` 
- 或者
- ``` 
- import {UCloudRtcEngine} from 'UCloudRtcEngine';
+ import {URtcDemo} from 'UCloudRtcEngine';
  ``` 
 
-## 2，初始化SDK
+## 2，初始化
 ``` 
-var UCloudRtcEngine = new UCloudRtcEngine();  
-UCloudRtcEngine.init({  
-        app_id: appData.appId,//项目的appid  
-        room_id: appData.roomId,//进入的房间id  
-        user_id: appData.userId,//用户的id  
-    }).then(function(data){  
-	//返回当前用户的token  
-	},function(err){  
+const URtcDemo = new UCloudRtcEngine();  
+```
+## 3，获取token
+``` 
+const URtcDemo = new UCloudRtcEngine();  
+URtcDemo.getToken({
+    app_id: appId,//控制台创建项目获取到的appkey
+    room_id: roomId,//房间号
+    user_id: userId,//用户id
+    appkey: appkey//控制台创建项目获取到的appkey
+}).then(function(data) {
+    //返回当前用户的token 
+}).catch(function(err){
+    //报错信息 
+})
+``` 
+
+## 4，建立链接
+``` 
+URtcDemo.init({  
+    app_id: appId,//控制台创建项目获取到的appkey
+    room_id: roomId,//房间号
+    user_id: user_id,//用户id
+    token: token,//getToken()获取到的token
+    role_type: role_type, //用户权限0 推流 1 拉流 2 全部
+    room_type: room_type //房间类型 0 rtc小班课 1 rtc 大班课 
+}).then(function(data){  
+//返回链接url 
+}).catch(function(err){
+    //报错信息 
 }) 
 ``` 
 
-## 3，登陆房间
+## 5，开启本地媒体设备
 ``` 
-UCloudRtcEngine.joinRoom({  
-    token: getToken//初始化时获得的token  
-}).then(function(e){  
-    //加入房间成功  
-},function(err){  
-    //加入房间失败  
-})
+URtcDemo.getLocalStream({
+    media_data: "videoProfile1280*720",//设置视频分辨率
+    video_enable: true,//是否开始摄像头true/false
+    audio_enable: true,//是否开启音频设备true/false
+    media_type: 1 //采集类型 1 摄像头 2 桌面
+}).then(function(data) {
+    //加入媒体流
+}.catch(function(err){
+    //报错信息 
+}) 
 ```
 
-## 4，获取本地音视频流
+## 6，加入房间
 ``` 
-UCloudRtcEngine.getLocalStream({  
-	media_data:’videoProfile640*360’,//推流相关配置的属性（分辨率宽度*分辨率高度）  
-	video_enable:true,//是否采集视频  
-	audio_enable:true,//是否采集音频  
-	media_type:1 //MediaType 1 cam 2 desktop  
-}).then(function(data){  
-   //音视频流数据  
-},function(e){  
-    //错误信息  
-})
+URtcDemo.joinRoom({
+    token: token, //getToken()获取到的token
+    role_type: 2, //用户权限0 推流 1 拉流 2 全部
+    room_type: room_type //房间类型 0 rtc小班课 1 rtc 大班课
+}).then(function(e) {
+    //房间信息
+}).catch(function(err){
+    //报错信息 
+}) 
 ```
 
-## 5，发布本地流
+## 7，发布本地流
 ``` 
-UCloudRtcEngine.publish({  
+URtcDemo.publish({  
 	user_id:user_id,//用户id  
 	media_type:1,//发布的流类型 1 摄像头 2桌面  
-	audio: true,//是否包含音频流  
-	video:true,//是否包含视频流  
-	data:false//是否包含数据流  
+	audio: true,//是否包含音频流 true/false
+	video:true,//是否包含视频流 true/false
+	data:false//是否包含数据流 true/false
 }).then(function(e){  
-    //发布成功  
-},function(err){  
-     //发布失败  
+    //发布信息 
+}).catch(function(err){
+    //报错信息 
 });  
 ```
 
-## 6,订阅远端流 
+## 8,订阅远端流 
 ``` 
-UCloudRtcEngine.subscribe({  
+URtcDemo.subscribe({  
 	media_type: 1,//订阅的流类型 1 摄像头 2桌面  
 	stream_id: “stream_id”,//订阅流id  
 	user_id: “user_id",//订阅用户id  
 },{  
-	audio_enable: true,//是否包含音频流  
-	video_enable: true//是否包含数据流  
+	audio_enable: true,//是否包含音频流 true/false
+	video_enable: true//是否包含数据流 true/false
 }).then(function(e){  
-    //发布成功  
-},function(err){  
-    //发布失败  
-}); 
+    //订阅信息  
+}).catch(function(err){
+    //报错信息 
+}) 
 ```
 
-## 7，获取本地音量数据
+## 9，获取本地音量数据
 ``` 
-UCloudRtcEngine.getAudioVolum().then(function(data){  
+URtcDemo.getAudioVolum().then(function(e){  
      //音量数据  
- },function(err){  
- 	//错误信息  
+ }).catch(function(err){
+    //报错信息 
 });
 ```
 
-## 8，关闭/打开本地音视频
+## 10，打开/关闭本地音视频
 ``` 
-UCloudRtcEngine.activeMute({  
-        stream_id: stream_id,//媒流id   
-        stream_type: 1,//1 发布流 2 订阅流  
-        user_id:user_id,//用户id  
-        track_type: 2,//1 视频 2音频  
-        mute: video_enable//true 禁用 false 开启  
-    }).then(function(e){  
-		//操作成功  
-	},function(err){  
-		//错误信息  
+URtcDemo.activeMute({  
+    stream_id: stream_id,//媒流id   
+    stream_type: 1,//1 发布流 2 订阅流  
+    user_id: user_id,//用户id  
+    track_type: 2,//1 视频 2音频  
+    mute: video_enable//true 禁用 false 开启  
+}).then(function(e){  
+    //操作成功  
+}).catch(function(err){
+    //报错信息 
 });
 ```  
 
-## 9，枚举本地媒体设备
+## 11，枚举本地媒体设备
 ``` 
-UCloudRtcEngine.getLocalDevices().then(function(e){  
+URtcDemo.getLocalDevices().then(function(e){  
     //成功输出本地设备数据  
   	//microphones 音频输入设备列表	  
 	//speakers 音频输出设备列表  
 	//cameras 视频输输入设备列表  
 	//设备列表中的每一个元素类型相同（label：设备名称，deviceId：设备Id）  	
-},function(err){  
-    //失败  
+}).catch(function(err){
+    //报错信息 
 });
 ``` 
 
-## 10，离开房间
+## 12，离开房间
 ``` 
-UCloudRtcEngine.leaveRoom({  
+URtcDemo.leaveRoom({  
     room_id: room_id//房间id  
 }).then(function(e){  
     //退出成功  
 },function(err){  
      //退出失败  
 }); 
+``` 
+
+## 13，开始录制
+``` 
+URtcDemo.startRecord({
+    "mimetype": 3,//1 音频 2 视频 3 音频+视频
+    "mainviewuid": appData.userId,//主窗口位置用户id
+    "mainviewtype": 1,//主窗口的媒体类型 1 摄像头 2 桌面
+    "width": 1280,//320~1920之间
+    "height": 720,//320~1920之间
+    "watermarkpos": 1, //1 左上 2 左下 3 右上 4 右下,
+    "bucket": "urtc-test",
+    "region": 'cn-bj' //所在区域,
+}).then(function (e) {
+    //返回录制文件名
+    //观看录制地址规则 'http://'+ bucket + '.'+ region +'.ufileos.com/' + e.data.FileName  
+}).catch(function(err){
+    //错误信息
+})
+``` 
+
+## 14，结束录制
+``` 
+URtcDemo.stopRecord().then(function (e) {
+    //录制成功  
+}).catch(function(err){
+    //错误信息
+})
 ``` 

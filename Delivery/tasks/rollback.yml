@@ -1,0 +1,14 @@
+---
+- name: step rollback | 检查{{ code_previous_path }}是否存在代码
+  shell: "ls {{ code_previous_path }} | wc -l"
+  register: rollback_code_result
+  failed_when: rollback_code_result.stdout == 0
+
+- name: step rollback | 回滚代码
+  copy: "src={{ code_previous_path }}/{{ deploy_service_file_stats.stdout_lines[0] | basename }} dest={{ service_work_path }} owner={{ deploy_service_user }} remote_src=yes"
+
+- name: step deploy | 解压文件
+  shell: "cd {{ service_work_path }} && tar -zvxf {{ deploy_service_file_stats.stdout_lines[0] }}"
+
+- name: step deploy | reload nginx
+  shell: "nginx -s reload"

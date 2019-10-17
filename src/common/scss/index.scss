@@ -1,0 +1,25 @@
+.fl{
+    float: left !important;
+}
+
+.fr {
+    float: right !important;
+}
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden
+}
+
+.h100{
+    height: 100% !important;
+}
+.pb{
+    position: absolute !important;
+}
+.pr{
+    position: relative !important;
+}

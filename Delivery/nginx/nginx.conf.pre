@@ -1,0 +1,141 @@
+
+#user  nobody;
+worker_processes  10;
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+#pid        logs/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+    #                  '$status $body_bytes_sent "$http_referer" '
+    #                  '"$http_user_agent" "$http_x_forwarded_for"';
+    log_format   main '{ "@timestamp": "$time_iso8601", "remote_addr": "$remote_addr", "@fields": {"remote_addr": "$remote_addr","remote_user": "$remote_user","body_bytes_sent": $body_bytes_sent, "request_time": $request_time, "status": $status, "host": "$host", "http_host": "$http_host", "request": "$request", "request_method": "$request_method", "http_referrer": "$http_referer", "http_x_forwarded_for": "$http_x_forwarded_for", "http_user_agent": "$http_user_agent" }}';
+    
+    access_log  /var/log/nginx/access.log  main;
+    error_log   /var/log/nginx/error.log;
+
+    gzip  on;
+    sendfile        on;
+
+    keepalive_timeout  65;
+    autoindex off;
+    server_tokens off;
+
+    limit_conn_status 503;
+    limit_conn_zone $binary_remote_addr zone=ipconn:100m;
+    limit_req_zone  $binary_remote_addr zone=ipreq:100m rate=10r/s;
+
+    server {
+        listen       80;
+        listen 443 ssl;
+        ssl_certificate /etc/nginx/key/server.crt;
+        ssl_certificate_key /etc/nginx/key/server.key;
+        server_name  demopre.urtc.com.cn;
+
+	limit_conn ipconn 100;
+	limit_req  zone=ipreq  burst=10  nodelay;
+
+        location / {
+            if ( $host !~* 'demopre.urtc.com.cn' ) {
+    	        return 403;
+            }
+            if ($http_user_agent ~* "java|python|perl|ruby|curl|bash|echo|uname|base64|decode|md5sum|select|concat|httprequest|httpclient|nmap|scan" ) {
+            	return 403;
+	    }
+	    if ($http_user_agent = "" ) {
+    	        return 403;
+            }
+            if ($request_method !~ ^(GET|POST|OPTIONS|HEAD)$ ) {
+                return 444;
+            }
+
+            root  /www/rtc;
+            index  index.html index.htm;
+	    try_files $uri /index.html; 
+        }
+
+
+        #location /api/job/ {
+        #    root  /www/rtc;
+        #    proxy_pass http://120.132.106.50:8084/job/;
+        #}
+
+        #location /api/stream/ {
+        #    root  /www/rtc;
+        #    proxy_pass http://120.132.106.50:8084/stream/;
+        #}
+
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
+        location ~ /\.ht {
+            deny  all;
+        }
+    }
+
+
+    server {
+        listen       80;
+        listen 443 ssl;
+        ssl_certificate /etc/nginx/key/server.crt;
+        ssl_certificate_key /etc/nginx/key/server.key;
+        server_name  weilaipre.urtc.com.cn;
+
+	limit_conn ipconn 100;
+	limit_req  zone=ipreq  burst=10  nodelay;
+
+        access_log  /var/log/nginx/access.log  main;
+        error_log   /var/log/nginx/error.log;
+
+        location / {
+            if ( $host !~* 'weilaipre.urtc.com.cn' ) {
+    	        return 403;
+            }
+            if ($http_user_agent ~* "java|python|perl|ruby|curl|bash|echo|uname|base64|decode|md5sum|select|concat|httprequest|httpclient|nmap|scan" ) {
+            	return 403;
+	    }
+	    if ($http_user_agent = "" ) {
+    	        return 403;
+            }
+            if ($request_method !~ ^(GET|POST|OPTIONS|HEAD)$ ) {
+                return 444;
+            }
+
+            root  /www/weilai;
+            index  index.html index.htm;
+	    try_files $uri /index.html; 
+        }
+
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
+        location ~ /\.ht {
+            deny  all;
+        }
+    }
+
+
+
+}

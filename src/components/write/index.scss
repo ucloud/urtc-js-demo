@@ -1,0 +1,59 @@
+.write_main{
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 120px;
+    bottom: 0;  
+    padding-left: 60px;
+    text-align: left;
+}
+.white-board{
+    width: 100%;
+    height: 100%;
+    text-align: left;
+    background-color: #fff;
+}
+
+.write_active {
+    position: absolute;
+    left: 0;
+    top:0;
+    width: 60px;
+    height: 100%;
+    z-index: 11;
+    text-align: center;
+    background-color: #ddd;
+
+    .iconfont {
+        display: block;
+        height: 30px;
+        font-size: 24px;
+        margin-top: 10px;
+        line-height: 30px;
+        cursor: pointer;
+        color: #333;
+
+        &.icon-border {
+            font-size: 26px;
+        }
+
+        &.icon-text {
+            font-size: 22px;
+        }
+
+        &.active,&:hover{
+            font-weight: bold;
+            color: #3860f4;//#ec3455;
+            transform: scale(1.2);
+        }
+    }
+}
+
+.menu-box {
+    position: absolute;
+    z-index: 12;
+    width: 280px;
+    height: 100%;
+    box-shadow: 2px 0px 4px #eee;
+}
+

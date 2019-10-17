@@ -1,0 +1,77 @@
+.chat_main{
+    position: relative;
+    height: calc(100% - 120px);;
+    width: 100%;
+    .chat_list_wrapper{
+        position: relative;
+        box-sizing: border-box;
+        height: 100%;
+        width: 100%;
+        padding: 0 3px;
+         .top31 {
+             top: 31px !important;
+         }
+        .user_list{
+             position: absolute;
+             overflow: auto;
+             padding-top: 3px;
+             top: 60px;
+             left: 0;
+             right: 0;
+             bottom: 0px;
+             background-color: floralwhite;
+        }
+        .callList{
+            position: absolute;
+            overflow: auto;
+            padding-top: 3px;
+            top: 60px;
+           
+            left: 0;
+            right: 0;
+            bottom: 0px;
+            background-color: floralwhite;
+        }
+        .chat_list{
+            position: absolute;
+            overflow: auto;
+            padding: 3px 4px 0 ;
+            box-sizing: border-box;
+            top: 60px;left: 0; right: 0;bottom: 34px;
+            background-color: ivory;
+            .chat_list_other{
+                text-align: left;
+                height: 20px;
+            }
+            .chat_list_me{
+                text-align: right;
+            }
+        }
+        .chat_list_content{
+            text-align: left;
+            position: absolute;
+            bottom: 0;left: 0;right: 0;
+            display: -webkit-flex;
+            display: flex;
+            .input{
+                 -webkit-flex: 1;
+                 flex:1;
+                .sendBtn {
+                    cursor: pointer;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                }
+            }
+            .disChat {
+                -webkit-flex: none;
+                flex: none;
+                width: 34px;
+                height: 34px;
+                height: 100%;
+                display: inline-block;
+            }
+        }
+    }
+}

@@ -1,0 +1,47 @@
+.chat_detail{
+    position: relative;
+    vertical-align: bottom;
+    padding-bottom: 10px;
+    >p{ 
+        line-height: 18px;
+        max-width: 170px;
+        font-size: 14px;
+        text-align: left;
+        padding-top: 3px;
+        margin: 0 5px;
+        vertical-align: middle;
+        
+    }   
+    .user_message{
+        width: 95px;
+        word-wrap:break-word;
+        word-break:break-all;
+        overflow: hidden;
+        /*这个参数根据需要来绝对要不要*/
+    }
+  
+    .user_head_bg{
+        display: inline-block;
+        vertical-align: middle;
+        height: 18px;
+        width: 18px;
+        line-height: 24px;
+        border-radius: 50%;
+        background-image: url(../../common/img/cc.png);
+        background-size: 100%;
+    }
+    .user_name{
+        display: inline-block;
+        height: 18px;
+        line-height: 24px;
+        font-size: 12px;
+        margin: 0 5px;
+    }
+    .chat_detail_head{
+        display: inline-block;
+        // width: 30px;
+        height: 100%;
+        line-height: 24px;
+        vertical-align: bottom;
+    }
+}

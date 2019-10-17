@@ -1,0 +1,31 @@
+---
+- hosts: urtc_demo 
+  serial: 1
+  vars:
+    deploy_service_file: /data/jenkins/workspace/urtc_demo/src/urtc_demo/build.zip
+    deploy_workspace: /data/jenkins/workspace/urtc_demo/src/urtc_demo
+    deploy_service_user: root
+    web_root_path: /www
+    build_path:  /www/build
+    service_work_path: /www/rtc
+    service_file: build.zip
+    code_online_path: /home/urtc_demo/backup/online
+    code_previous_path: /home/urtc_demo/backup/previous
+    code_history_path: /home/urtc_demo/backup/history
+    nginx_conf_file: nginx.conf
+    pre_nginx_conf_file:  nginx.conf.pre
+    server_nginx_conf_file: /etc/nginx/nginx.conf
+    server_nginx_key: /etc/nginx/key
+    nginx_key_dir: key
+    server_nginx_key_dir: /etc/nginx
+
+  tasks:
+    - name: import check
+      import_tasks: check.yml
+      when: ACTION == "delivery"
+    - name: import deploy
+      import_tasks: deploy.yml
+      when: ACTION == "delivery"
+    - name: import rollback
+      import_tasks: rollback.yml
+      when: ACTION == "rollback"

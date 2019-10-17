@@ -1,0 +1,72 @@
+.classroom_main{
+    background-color: #ffffff;
+    color: black;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    min-width: 1200px;
+    min-height:558px;
+    overflow: hidden;
+    translate: all .3s;
+    
+  
+    .classroom_layout{
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        margin: 0;
+        box-sizing: border-box;
+        top: 42px;
+        background-color: #f4f4f4;
+    }
+}
+.classroom_left{
+    position: relative;
+}
+.h0{
+    height: 0 !important;
+}
+.act-top{
+    position: absolute;
+    right:100px;
+    top:15px;
+    color:#fff;
+    z-index: 111;
+    font-size: 12px;
+    cursor: pointer;
+}
+.recording-video{
+    position: absolute;
+    right:200px;
+    font-size: 12px;
+    top:14px;
+    color:#fff;
+    z-index: 111;
+    cursor: pointer;
+    line-height: 14px;
+}
+.recording{
+    color: #f76868;
+    font-size: 14px;
+}
+.start-video{
+    position: absolute;
+    right:200px;
+    font-size: 12px;
+    top:15px;
+    color:#fff;
+    z-index: 111;
+    cursor: pointer;
+}
+.device-id{
+    padding: 20px;
+}
+.device-id .device-id_seclect{
+    margin-left: 5px;
+}
+.localvideo_main{
+    height: 120px;
+    background: #abacad;
+}

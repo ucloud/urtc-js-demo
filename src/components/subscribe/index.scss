@@ -1,0 +1,51 @@
+.subscribe{
+    text-align: left;
+    .subscribe_content{
+        position: relative;
+        display: inline-block;
+        margin-left: 10px;
+    }
+    .video_wrapper{
+        position: relative;
+    }
+    .video_userInfo{
+        position: absolute;
+        box-sizing: border-box;
+        bottom: 16px;
+        left: 4px;
+        height: 16px;
+        line-height: 12px;
+        padding-left: 1px;
+        width: 90px;
+        border-radius: 10px;
+        color: black;
+        background-color: #fff;
+    }
+    .subscribe_content_local{
+        border: 1px solid rgb(141, 227, 77);
+        display: inline-block;
+    }
+
+     .head_bg {
+         display: inline-block;
+         height: 16px;
+         width: 16px;
+         border-radius: 50%;
+         vertical-align: middle;
+         background-image: url(../../common/img/cc.png);
+         background-size: 100%;
+         line-height: 20px;
+     }
+
+     .head_name {
+         display: inline-block;
+         line-height: 18px;
+         font-size: 12px;
+         margin: 0 5px;
+         overflow: hidden; //超出的文本隐藏
+         text-overflow: ellipsis; //溢出用省略号显示
+         white-space: nowrap;
+         vertical-align: middle;
+         width: 50px;
+     }
+}
