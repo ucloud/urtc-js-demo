@@ -62,7 +62,7 @@ URTCJs 是UCloud推出的一款适用于 web 平台的实时音视频 SDK，
 
 - 使用 npm 安装，并将 sdk 使用 ES6 语法作为模块引入
 
-1) 使用 [npm](https://www.npmjs.com/) 或 [Yarn](https://yarnpkg.com/) 安装 sdk:
+1) 使用 [npm](https://www.npmjs.com/) 或 [Yarn](https://yarnpkg.com/) 安装 [urtc-sdk](https://github.com/ucloud/urtc-sdk-web):
 
 ```
 npm install --save urtc-sdk
