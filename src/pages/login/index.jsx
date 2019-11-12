@@ -27,8 +27,8 @@ const formLable = {
   ],
   submit: "加入",
   crouseType: [
-    { key: "1", value: "大班课" },
     { key: '0', value: '小班课', },
+    { key: "1", value: "大班课" },
   ]
 };
 let appData = {};
@@ -41,11 +41,11 @@ class Login extends React.Component {
       loading: false,
       size: "md",
       disabled: false,
-      role_type: formLable.character[0].key,
+      role_type: formLable.character[1].key,
       roomId: "",
       name: "",
-      room_type: 1,
-      userTypeStyle:'block'
+      room_type: 0,
+      userTypeStyle:'none'
     };
   }
 
@@ -120,6 +120,11 @@ class Login extends React.Component {
       this.setState({
         userTypeStyle: 'none',
         role_type:'2'
+      });
+    }else{
+      this.setState({
+        userTypeStyle: 'block',
+        role_type:'1'
       });
     }
   };

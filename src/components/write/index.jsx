@@ -16,7 +16,7 @@ import UploadBtn from "./tools/upload/UploadBtn";
 import WhiteboardBottomRight from "./tools/ppt/BottomRight";
 import MenuAnnexBox from "./menu/AnnexBox";
 
-import '@/assets/iconfont/iconfont.css';
+import '@/src/assets/iconfont/iconfont.css';
 import './index.scss';
 import {ossConfigObj} from "../../tokens.json";
 import { getOffsetPointAndScale } from './utils';

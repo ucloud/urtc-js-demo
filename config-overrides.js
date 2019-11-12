@@ -1,16 +1,22 @@
-/*
- * @Description: In User Settings Edit
- * @Author:zhangjizhe
- * @Date: 2019-08-15 16:07:54
- * @LastEditTime: 2019-08-20 10:46:17
- * @LastEditors: Please set LastEditors
- */
 const path = require('path');
-const { override, addWebpackAlias, addBabelPlugins } = require('customize-cra');
+const webpack = require('webpack');
+const {
+    override,
+    addWebpackAlias,
+    addBabelPlugins,
+    addWebpackPlugin,
+    removeModuleScopePlugin,
+} = require('customize-cra');
+
 module.exports = override(
     addWebpackAlias({
-        ["@"]: path.resolve(__dirname, "src")
+        "@/sdk": path.resolve(__dirname, "sdk"),
+        "@/src": path.resolve(__dirname, "src"),
     }),
+    addWebpackPlugin(new webpack.DefinePlugin({
+        'process.env.IS_PRE': JSON.stringify(process.env.env === 'pre')
+    })),
+    removeModuleScopePlugin(),
     ...addBabelPlugins([
         'import',
         {

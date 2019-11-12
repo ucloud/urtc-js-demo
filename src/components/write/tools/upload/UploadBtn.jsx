@@ -7,9 +7,9 @@ import {PptKind, WhiteWebSdk} from "white-react-sdk";
 import {UploadManager} from "./UploadManager";
 
 import "./UploadBtn.scss";
-import image from "@/assets/images/pic.png";
-import doc_to_image from "@/assets/images/ppt2s.png";
-import doc_to_web from "@/assets/images/ppt2d.png";
+import image from "@/src/assets/images/pic.png";
+import doc_to_image from "@/src/assets/images/ppt2s.png";
+import doc_to_web from "@/src/assets/images/ppt2d.png";
 // import * as upload from "../images/image.svg";
 
 export const FileUploadStatic = "application/pdf, " +

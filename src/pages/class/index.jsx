@@ -8,10 +8,8 @@ import {
   Modal
 } from "@ucloud-fe/react-components";
 import { log } from "../../common/util/index";
-// import { UCloudRtcEngine } from "../../vendor/urtcsdk";
-import {
-  UCloudRtcEngine
-} from 'ucloud-rtc-sdk';
+import sdk, { Client, Logger } from "urtc-sdk";
+import { UCloudRtcEngine } from "ucloud-rtc-sdk";
 import { getText } from "../../common/dictMap/index";
 import { randNum } from "../../common/util/index";
 // component组件
@@ -24,16 +22,25 @@ import { closeIM } from "../../common/api/chat";
 import "./index.scss";
 import paramServer from "../../common/js/paramServer";
 const { Option, Size } = Select;
-
+console.log(9999999, sdk.version);
 window.addEventListener("unload", closeIM, false);
-const config = {
-  role_type: 0, //用户权限0 推流 1 拉流 2 全部
-  audiooutput: null, //扬声器id
-  video: null, //视频设备id
-  audiointput: null, //麦克风id
-  resolving_power: null //分辨率
-};
+// const config = {
+//   role_type: 2, //用户权限0 推流 1 拉流 2 全部
+//   audiooutput: null, //扬声器id
+//   video: null, //视频设备id
+//   audiointput: null, //麦克风id
+//   resolving_power: null //分辨率
+// };
 let URtcDemo = new UCloudRtcEngine();
+
+Logger.setLogLevel("debug");
+if (process.env.REACT_APP_ENV == "pre") {
+  sdk.setServers({
+    api: "https://pre.urtc.com.cn",
+    log: "https://logpre.urtc.com.cn"
+    // signal: "wss://urtc.ibusre.cn:5005"
+  });
+}
 
 class ClassRoom extends React.Component {
   constructor(props) {
@@ -49,13 +56,13 @@ class ClassRoom extends React.Component {
       videoCurr: false,
       videoSrcObjectId: "",
       loadList: [],
-      videoIdArr:[],
-      deviceId:0,
-      settingVisible:false,
-      recording:false,
-      recordUrlVisible:false,
-      recordUrl:'',
-      recordText:'开始录制',
+      videoIdArr: [],
+      deviceId: 0,
+      settingVisible: false,
+      recording: false,
+      recordUrlVisible: false,
+      recordUrl: "",
+      recordText: "开始录制",
       appData: {
         appId: paramServer.getParam().appId,
         userId: paramServer.getParam().userId,
@@ -73,6 +80,7 @@ class ClassRoom extends React.Component {
     this.setting = this.setting.bind(this);
     this.changeOk = this.changeOk.bind(this);
     // this.startVideo = this.startVideo.bind(this);
+    this.desktop = this.desktop.bind(this);
     this.recording = this.recording.bind(this);
   }
 
@@ -84,176 +92,120 @@ class ClassRoom extends React.Component {
         params: param
       },
       () => {
-        this.urtcInit();
+        this.urtcInit(this.state.params.role_type);
       }
     );
+
+    window.addEventListener("beforeunload", this.leaveRoom);
   }
 
-  downMic() {
-    console.log(">>>>reset RTC");
-    const appData = this.state.params;
-    URtcDemo.leaveRoom({
-      room_id: appData.roomId
-    });
-    let _this = this;
-    let token = null;
+  leaveRoom = () => {
+    this.client.leaveRoom();
+  };
 
-    URtcDemo.getToken({
-      app_id: appData.appId,
-      room_id: appData.roomId,
-      user_id: appData.userId,
-      appkey: appData.appkey
-    }).then(function(data) {
-      token = data;
-      let o = paramServer.getParam();
-      paramServer.setParam(Object.assign({ rtcToken: data }, o));
-      // console.log(_this.state.params)
-      URtcDemo.init({
-        app_id: appData.appId,
-        room_id: appData.roomId,
-        user_id: appData.userId,
-        token: data,
-        role_type: appData.role_type, //用户权限0 推流 1 拉流 2 全部
-        room_type: appData.room_type //房间类型 0 rtc小班课 1 rtc 大班课
-      }).then(function(data) {
-        console.log(data);
-        // if (appData.role_type === 0 || appData.role_type === 2) {
-        //     URtcDemo.getLocalStream({
-        //         media_data: 'videoProfile1280*720',
-        //         video_enable: true,
-        //         audio_enable: true,
-        //         media_type: 1 //MediaType 1 cam 2 desktop
-        //     }).then(function (data) {
-        //         console.log(113)
-        //         console.log(data)
-        //         _this.setState({
-        //             videoSrcObject: data,
-        //             videoSrcObjectId: appData.userId
-        //         });
-        //     })
-        // }
-        URtcDemo.joinRoom({
-          token: token,
-          role_type: appData.role_type, //用户权限0 推流 1 拉流 2 全部
-          room_type: appData.room_type //房间类型 0 rtc小班课 1 rtc 大班课
-        }).then(
-          e => {
-            console.log(e);
-            console.log();
-            _this.videoList.length = 0;
-            console.log("videoList123", _this.videoList);
-            // console.log(_this.videoList)
-            _this.updateRtcList(_this.videoList);
-            // // let arr = [...loadList]
-            _this.setState({
-              loadList: _this.videoList
-            });
-          },
-          function(err) {
-            console.log(err);
-          }
-        );
+  componentWillUnmount() {
+    window.removeEventListener("beforeunload", this.leaveRoom);
+  }
+
+  // 下麦操作，im消息过来后，退出重新加入房间
+  downMic = () => {
+    const appData = paramServer.getParam();
+    this.setState({
+      remoteStreams: []
+    });
+    this.client.leaveRoom(() => {
+      this.urtcInit(1);
+    });
+  };
+
+  urtcInit = role_type => {
+    const appData = paramServer.getParam();
+    const token = sdk.generateToken(
+      appData.appId,
+      appData.appkey,
+      appData.roomId,
+      appData.userId
+    );
+    window.p = this.client = new Client(appData.appId, token, {
+      type: appData.room_type === 0 ? "rtc" : "live",
+      role:
+        role_type === 0 ? "push" : role_type === 2 ? "push-and-pull" : "pull"
+    });
+
+    this.client.on("stream-published", stream => {
+      console.log("stream-published ", stream);
+      this.setState({
+        localStream: stream
       });
     });
-  }
-  urtcInit() {
-    const appData = this.state.params;
-    let _this = this;
-    let token = null;
-    console.log("urtcInit");
-    console.log(this.videoList);
-    URtcDemo.getToken({
-      app_id: appData.appId,
-      room_id: appData.roomId,
-      user_id: appData.userId,
-      appkey: appData.appkey
-    }).then(function(data) {
-      token = data;
-      let o = paramServer.getParam();
-      paramServer.setParam(Object.assign({ rtcToken: data }, o));
-      // console.log(_this.state.params)
-      URtcDemo.init({
-        app_id: appData.appId,
-        room_id: appData.roomId,
-        user_id: appData.userId,
-        token: data,
-        deviceId: _this.state.deviceId,
-        role_type: appData.role_type, //用户权限0 推流 1 拉流 2 全部
-        room_type: appData.room_type //房间类型 0 rtc小班课 1 rtc 大班课
-      }).then(
-        function(data) {
-          console.log(data);
-          if (appData.role_type === 0 || appData.role_type === 2) {
-            URtcDemo.getLocalStream({
-              media_data: "videoProfile1280*720",
-              video_enable: true,
-              audio_enable: true,
-              media_type: 1 //MediaType 1 cam 2 desktop
-            }).then(function(data) {
-              console.log(113);
-              console.log(data);
-              _this.setState({
-                videoSrcObject: data,
-                videoSrcObjectId: appData.userId,
-                videoCurr: true
-              });
-              URtcDemo.joinRoom({
-                token: token,
-                role_type: appData.role_type, //用户权限0 推流 1 拉流 2 全部
-                room_type: appData.room_type //房间类型 0 rtc小班课 1 rtc 大班课
-              }).then(
-                e => {
-                  // 定时获取监控
-                  _this.getMonitorData();
-                },
-                function(err) {
-                  console.log(err);
-                }
-              );
-            });
-          } else {
-            URtcDemo.joinRoom({
-              token: token,
-              role_type: appData.role_type, //用户权限0 推流 1 拉流 2 全部
-              room_type: appData.room_type //房间类型 0 rtc小班课 1 rtc 大班课
-            }).then(
-              e => {
-                // 定时获取监控
-                _this.getMonitorData();
-              },
-              function(err) {
-                console.log(err);
-              }
-            );
-          }
+
+    this.client.on("stream-subscribed", stream => {
+      console.log("stream-subscribed ", stream);
+
+      const { remoteStreams = [] } = this.state;
+      const idx = remoteStreams.findIndex(item => stream.sid === item.sid);
+      if (idx !== -1) {
+        remoteStreams.splice(idx, 1, stream);
+      }
+      this.setState({ remoteStreams });
+    });
+
+    this.client.on("stream-added", stream => {
+      console.log("stream-added ", stream);
+
+      this.client.subscribe(
+        stream.sid,
+        p => {
+          console.log("subscribe success ", p);
+
+          //老师id数组
+          let teacherIdArr = paramServer.getParam().teachList.map(e => {
+            return e.UserId;
+          });
+          const { remoteStreams = [] } = this.state;
+          remoteStreams.push(stream);
+          this.updateRtcList(this.client.getStreams());
+          this.setState({
+            remoteStreams,
+            videoList: this.client.getStreams()
+          });
         },
-        function(error) {
-          console.log("init", error);
+        e => {
+          console.log("subscribe failure ", e);
         }
       );
     });
-    console.log(2000);
-    URtcDemo.addEventListener("loadVideo", this.loadVideo);
-    URtcDemo.addEventListener("userLeave", this.userLeave);
-    // URtcDemo.addEventListener('leaveroom', this.leaveLocalRoom);
-  }
 
-  getMonitorData = () => {
-    setInterval(() => {
-      //不再订阅流中，就为本地流
-      let flag = Object.keys(URtcDemo.scbMap)[0] == "local";
-      let d = null;
-      if (flag) {
-        d = URtcDemo.getMonitor();
-      } else {
-        d = URtcDemo.getMonitor(Object.keys(URtcDemo.scbMap)[0]);
+    this.client.on("stream-removed", stream => {
+      console.log("stream-removed ", stream);
+
+      const { remoteStreams = [] } = this.state;
+      const idx = remoteStreams.findIndex(item => stream.sid === item.sid);
+      if (idx !== -1) {
+        remoteStreams.splice(idx, 1);
       }
-      if (d) {
-        this.setState({
-          monitorData: d
-        });
-      }
-    }, 3000);
+      this.setState({ remoteStreams });
+    });
+
+    this.client.joinRoom(appData.roomId, appData.userId, user => {
+      // this.client.setVideoProfile('1280*720');
+
+      this.client.publish(
+        {
+          audio: true,
+          video: true,
+          screen: false
+        },
+        p => {
+          console.log("publish success ", p);
+
+          // this.getMonitorData();
+        },
+        e => {
+          console.log("publish failure ", e);
+        }
+      );
+    });
   };
 
   loadVideo(e) {
@@ -278,11 +230,11 @@ class ClassRoom extends React.Component {
       tmp.userId = e.userId;
       tmp.curr = false;
       tmp.time = new Date().getTime();
-      this.videoList.forEach(function(val,index){
-        if(val.userId == e.userId){
+      this.videoList.forEach(function(val, index) {
+        if (val.userId == e.userId) {
           _this.videoList.splice(index, 1);
         }
-      })
+      });
       this.videoList.push(tmp);
       this.updateRtcList(this.videoList);
       // let arr = [...loadList]
@@ -322,71 +274,25 @@ class ClassRoom extends React.Component {
     // })
   }
 
-  online() {
+  /**
+   * @description 学生上麦操作，推出房间，更改房间类型并重新加入
+   */
+  online = () => {
     // let URtcDemo = this.props.URtcDemo;
     const appData = paramServer.getParam();
+    this.setState({
+      remoteStreams: []
+    });
     const user_id = appData.userId;
-    const _this = this;
-    URtcDemo.leaveRoom({
-      room_id: appData.roomId
+    this.client.leaveRoom(() => {
+      this.urtcInit(2);
     });
-    URtcDemo.getToken({
-      app_id: appData.appId,
-      room_id: appData.roomId,
-      user_id: user_id,
-      appkey: appData.appkey
-    }).then(function(data) {
-      let rtcToken = data;
-      URtcDemo.init({
-        app_id: appData.appId,
-        room_id: appData.roomId,
-        user_id: user_id,
-        token: rtcToken,
-        role_type: appData.role_type, //用户权限0 推流 1 拉流 2 全部
-        room_type: appData.room_type //房间类型 0 rtc小班课 1 rtc 大班课
-      }).then(function(data) {
-        URtcDemo.getLocalStream({
-          media_data: "videoProfile1280*720",
-          video_enable: true,
-          audio_enable: true,
-          media_type: 1 //MediaType 1 cam 2 desktop
-        }).then(function(data) {
-          console.log("getLocalStream", _this.videoList);
-          console.log(_this.videoList.length);
-          _this.removeArrValue(_this.videoList, "userId", user_id);
-          console.log(_this.videoList.length);
-          // console.log(_this.videoList)
-          let tmp = {};
-          tmp.stream = data;
-          tmp.userId = user_id;
-          tmp.curr = true;
-          tmp.time = new Date().getTime();
-          _this.videoList.push(tmp);
-          // console.log(_this.videoList)
-          _this.updateRtcList(_this.videoList);
-          // // let arr = [...loadList]
-          _this.setState({
-            loadList: _this.videoList
-          });
-          URtcDemo.joinRoom({
-            token: rtcToken,
-            role_type: 2, //用户权限0 推流 1 拉流 2 全部
-            room_type: appData.room_type //房间类型 0 rtc小班课 1 rtc 大班课
-          }).then(function(e) {
-            console.log(e);
-            console.log("online2");
-          });
-        });
-      });
-    });
-
     // console.log(paramServer.getParam())
-  }
+  };
 
   updateRtcList(arr) {
     let o = paramServer.getParam();
     paramServer.setParam(Object.assign(o, { rtcList: arr }));
-    // console.error(paramServer.getParam())
   }
 
   removeArrValue(arr, attr, val) {
@@ -399,103 +305,166 @@ class ClassRoom extends React.Component {
     }
     arr.splice(index, 1);
   }
+
   deviceIdChange(e) {
     console.log(e);
     this.setState({
       deviceId: e
     });
   }
+
   setting() {
-    // getLocalDevices
-    let _that = this;
-    let videoArr = [];
     this.setState({
       settingVisible: true
     });
-    URtcDemo.getLocalDevices().then(function(e) {
-      e.forEach(val => {
-        if (val.kind === "videoinput") {
-          videoArr.push(val);
-        }
-      });
-      _that.setState({
-        videoIdArr: videoArr
-      });
-      // <Button onClick={_that.changeOk}>切换</Button>
-    });
+
+    this.client.getCameras(
+      cameras => {
+        console.log("get cameras success ", cameras);
+        this.setState({
+          videoIdArr: cameras
+        });
+      },
+      e => {
+        console.log("get cameras failure ", e);
+      }
+    );
   }
+
   changeOk() {
-    console.log(this.state.deviceId);
     this.setState({
       settingVisible: false
     });
-    const appData = paramServer.getParam();
-    URtcDemo.leaveRoom({
-      room_id: appData.roomId
-    });
-    this.urtcInit();
+
+    this.client.switchDevice(
+      "video",
+      this.state.deviceId,
+      p => {
+        console.log("switch camera success ", p);
+      },
+      e => {
+        console.log("switch camera failure ", e);
+      }
+    );
   }
-  recording(){
+
+  recording() {
     const appData = paramServer.getParam();
-    const _this = this;
-      if (this.state.recording == false) {
-        URtcDemo.startRecord({
-            "mimetype": 3,//1 音频 2 视频 3 音频+视频
-            "mainviewuid": appData.userId,//主窗口位置用户id
-            "mainviewtype": 1,//主窗口的媒体类型 1 摄像头 2 桌面
-            "width": 1280,//320~1920之间
-            "height": 720,//320~1920之间
-            "watermarkpos": 1, //1 左上 2 左下 3 右上 4 右下,
-            "bucket": "urtc-test",
-            "region": 'cn-bj' //所在区域,
-        }).then(function (e) {
-            // _that.style.color = '#e03737';
-            let url = 'http://urtc-test.cn-bj.ufileos.com/' + e.data.FileName
-            console.log(e)
-            _this.setState({
-              recordUrl:url,
-              recordText:'结束录制'
-            })
-        }).catch(function(err){
-          console.log(err)
-          
-        })
-        this.setState({
-          recording:true
-        })
-    }else{
-        URtcDemo.stopRecord().then(function (e) {
-            // _that.style.color = '#fff';
-            console.log(e)
-            _this.setState({
-              recordUrlVisible:true,
-              recordText:'开始录制'
-            })
-        }).catch(function(err){
-          console.log(err)
-        })
-        _this.setState({
-          recording:false,
-        })
-    }    
+
+    if (this.state.recording == false) {
+      const bucket = "urtc-test";
+      const region = "cn-bj";
+
+      this.client.startRecording(
+        {
+          waterMarkPosition: "left-top",
+          bucket: bucket,
+          region: region
+        },
+        record => {
+          console.log("start recording success ", record);
+          const url = `http://${bucket}.${region}.ufileos.com/${record.FileName}`;
+          // console.error(url);
+
+          this.setState({
+            recordUrl: url,
+            recordText: "结束录制"
+          });
+        }
+      );
+      this.setState({
+        recording: true
+      });
+    } else {
+      this.client.stopRecording(
+        p => {
+          console.log("stop recording success ", p);
+
+          this.setState({
+            recordUrlVisible: true,
+            recordText: "开始录制"
+          });
+        },
+        e => {
+          console.log("stop recording failure ", e);
+        }
+      );
+      this.setState({
+        recording: false
+      });
+    }
+  }
+
+  filterSubTeacher = () => {
+    const { remoteStreams = [] } = this.state;
+    if (paramServer.getParam().teachList) {
+      const { teachList = [] } = paramServer.getParam();
+      const idArr = teachList.map(e => {
+        return e.UserId;
+      });
+      console.log(idArr, paramServer.getParam());
+      let targetArr = remoteStreams.filter(e => {
+        console.log(e);
+        return idArr.includes(e.uid);
+      });
+
+      return targetArr.length ? targetArr[0] : [];
+    } else {
+      return [];
+    }
+  };
+  desktop() {
+    this.client.unpublish(
+      p => {
+        console.log("unpublish success ", p);
+        // this.getMonitorData();
+        this.client.publish(
+          {
+            audio: true,
+            video: false,
+            screen: true
+          },
+          p => {
+            console.log("publish success ", p);
+            // this.getMonitorData();
+          },
+          e => {
+            console.log("publish failure ", e);
+          }
+        );
+      },
+      e => {
+        console.log("publish failure ", e);
+      }
+    );
   }
   render() {
-    const { params, monitorData } = this.state;
+    const { params, localStream, remoteStreams = [], videoList } = this.state;
+    const subTeacher = this.filterSubTeacher();
+    console.log(localStream, remoteStreams);
     return (
       <div className="classroom_main">
         {/* <div className="start-video fr" onClick={this.startVideo}>
             <b><Icon type='video'/> </b>
                 开启视频
         </div> */}
+
         <div className="recording-video fr " onClick={this.recording}>
-            <Icon className={this.state.recording?'recording':''} type='sxt'/>
-                {this.state.recordText}
+          <Icon
+            className={this.state.recording ? "recording" : ""}
+            type="sxt"
+          />
+          {this.state.recordText}
         </div>
         <div className="act-top fr" onClick={this.setting}>
-            <Icon type='cog'/>
-                切换摄像头
+          <Icon type="cog" />
+          切换摄像头
         </div>
-        <Nav monitorData={monitorData}></Nav>
+        <div className="desktop fr" onClick={this.desktop}>
+          <Icon className="stack" type="stack" />
+          屏幕共享
+        </div>
+        <Nav client={this.client} />
         <div className="classroom_layout clearfix">
           {/* <Sidebar></Sidebar> */}
           <Row
@@ -504,30 +473,51 @@ class ClassRoom extends React.Component {
             type="flex"
           >
             <Col className="classroom_left" span={10}>
-              <SubscribeVideo data={this.state.loadList} />
-              {/* <div className="subscribe">
-                                <video src=""></video>
-                                <video src=""></video>
-                            </div> */}
+              <SubscribeVideo
+                isTeacther={
+                  params &&
+                  (params.room_type == 0 ||
+                    (params.room_type == 1 && params.role_type == 2))
+                }
+                localStream={localStream}
+                streams={remoteStreams || []}
+              />
               <Write appData={this.state.appData}></Write>
             </Col>
             <Col span={2}>
               {/* <Localvideo></Localvideo> */}
-              <div className="localvideo_main">
-                <ReactPlayer
-                  key={
-                    this.state.videoSrcObject && this.state.videoSrcObject.id
-                  }
-                  width="256px"
-                  height="100%"
-                  url={this.state.videoSrcObject}
-                  muted={this.state.videoCurr}
-                  playing
-                  playsinline
-                />
-              </div>
+              {params && (
+                <div className="localvideo_main">
+                  {params.room_type == 0 ||
+                  (params.room_type == 1 && params.role_type == 2) ? (
+                    //小班课显示本地
+                    <ReactPlayer
+                      key={localStream && localStream.sid}
+                      width="256px"
+                      height="100%"
+                      volume={null}
+                      url={localStream && localStream.mediaStream}
+                      muted={true}
+                      playing
+                      playsinline
+                    />
+                  ) : (
+                    //大班课验证身份是否为老师显示
+                    <ReactPlayer
+                      key={subTeacher && subTeacher.sid}
+                      width="256px"
+                      height="100%"
+                      volume={null}
+                      url={subTeacher && subTeacher.mediaStream}
+                      muted={false}
+                      playing
+                      playsinline
+                    />
+                  )}
+                </div>
+              )}
               <Chat
-                loadList={this.videoList}
+                loadList={videoList || []}
                 changeDataList={() => this.online()}
                 params={params}
                 urtcInit={() => this.downMic()}
@@ -563,26 +553,27 @@ class ClassRoom extends React.Component {
           </div>
         </Modal>
         <Modal
-            visible={this.state.recordUrlVisible}
-            onClose={() =>
-                this.setState({
-                  recordUrlVisible: false
-                })
-            }
-            onOk={() =>
-              this.setState({
-                recordUrlVisible: false
-              })}
-            isAutoClose={false}
-            size={'sm'}
-            title="录制结束"
+          visible={this.state.recordUrlVisible}
+          onClose={() =>
+            this.setState({
+              recordUrlVisible: false
+            })
+          }
+          onOk={() =>
+            this.setState({
+              recordUrlVisible: false
+            })
+          }
+          isAutoClose={false}
+          size={"sm"}
+          title="录制结束"
         >
-            <div className="form-row device-id">
-              <a href={this.state.recordUrl} target="_blank">
-                回看地址
-              </a>
-            
-            </div>
+          <div className="form-row device-id">
+            <a href={this.state.recordUrl} target="_blank">
+              回看地址
+            </a>
+            {/* 录制结束，请到本地服务录制目录查看 */}
+          </div>
         </Modal>
       </div>
     );

@@ -155,34 +155,22 @@ class Chat extends React.Component {
         });
       },
       IMCallAuth: () => {
-        console.error(paramServer.getParam(), this.state.callteamlist);
-
         if (
           data.operation == "close" &&
-          paramServer.getParam().role_type == "1"
+          paramServer.getParam().role_type == "1" &&
+          window.p.getStream().mediaStream !== undefined
         ) {
-          // 进行关闭麦克风操作,判断当前是否在麦上
-          let arr = paramServer.getParam().rtcList;
-          console.log(arr);
-          arr.map(e => {
-            console.error(e.userId == paramServer.getParam().UserId);
-            if (e.userId == paramServer.getParam().UserId) {
-              sendApplyCall(paramServer.getParam().teachList[0].UserId, false);
-              this.props.urtcInit();
-            }
-          });
+          sendApplyCall(paramServer.getParam().teachList[0].UserId, false);
+          this.props.urtcInit();
         }
-        // if (paramServer.getParam().role_type == '2'){
-        //     this.props.urtcInit();
-        // }
         this.setState({
           applyStatus: data.operation == "open"
         });
       },
       IMCallApply: () => {
         this.setState({
-            tabKey:'2'
-        })
+          tabKey: "2"
+        });
         let idList = [];
         let targetId = "";
         let list = data.callteamlist == null ? [] : data.callteamlist;
@@ -349,20 +337,18 @@ class Chat extends React.Component {
   };
 
   callTeam = e => {
-    ReplyCall(e.UserId, true).then(data => {
-      console.log(data);
-    });
+    ReplyCall(e.UserId, true).then(data => {});
   };
 
   componentWillUnmount() {
     // window.ws = null;
   }
 
-  changeTabKey = (e) => {
-      this.setState({
-          tabKey:e
-      })
-  }
+  changeTabKey = e => {
+    this.setState({
+      tabKey: e
+    });
+  };
 
   render() {
     const {
@@ -381,7 +367,7 @@ class Chat extends React.Component {
     } = this.state;
     let iconType = disableChatBtnStatus ? "ban" : "ban-2";
     let rtcList = this.props.loadList.map(e => {
-      return e.userId;
+      return e.uid;
     });
     let isRtcLists = [];
     let stuList = [];
@@ -390,6 +376,7 @@ class Chat extends React.Component {
       if (e.UserId == paramServer.getParam().userId) {
         userInRtc = true;
       }
+
       if (rtcList.includes(e.UserId)) {
         isRtcLists.push(e);
       } else {
@@ -413,7 +400,8 @@ class Chat extends React.Component {
                 <div style={{}}>
                   <div
                     className={
-                      (paramServer.getParam().room_type == 1)&&(paramServer.getParam().role_type == 2 || micFlag)
+                      paramServer.getParam().room_type == 1 &&
+                      (paramServer.getParam().role_type == 2 || micFlag)
                         ? "chat_list"
                         : "chat_list top31"
                     }
@@ -466,74 +454,78 @@ class Chat extends React.Component {
                   </div>
                 </div>
               </Tabs.Pane>
-              {paramServer.getParam().room_type == 1?
-              <Tabs.Pane
-                key={"0"}
-                tab={"学生(" + userList.length + ")"}
-                style={{ padding: 16 }}
-              >
-                <div style={{}}>
-                  <div
-                    className={
-                      (paramServer.getParam().room_type == 1)&&(paramServer.getParam().role_type == 2 || micFlag)
-                        ? "user_list"
-                        : "user_list top31"
-                    }
-                    ref={this.userList}
-                  >
-                    {userList.map((e, index) => {
-                      return (
-                        <StudentItem
-                          key={index}
-                          data={e}
-                          isTeacher={param.role_type === 2}
-                          id={e.userid}
-                          name={e.userid}
-                        />
-                      );
-                    })}
+              {paramServer.getParam().room_type == 1 ? (
+                <Tabs.Pane
+                  key={"0"}
+                  tab={"学生(" + userList.length + ")"}
+                  style={{ padding: 16 }}
+                >
+                  <div style={{}}>
+                    <div
+                      className={
+                        paramServer.getParam().room_type == 1 &&
+                        (paramServer.getParam().role_type == 2 || micFlag)
+                          ? "user_list"
+                          : "user_list top31"
+                      }
+                      ref={this.userList}
+                    >
+                      {userList.map((e, index) => {
+                        return (
+                          <StudentItem
+                            key={index}
+                            data={e}
+                            isTeacher={param.role_type === 2}
+                            id={e.userid}
+                            name={e.userid}
+                          />
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              </Tabs.Pane>
-              :null}
-              {paramServer.getParam().room_type == 1?
-               <Tabs.Pane key={"2"} tab={"连麦"} style={{ padding: 16 }}>
-               <div style={{}}>
-                 <div
-                   className={
-                    paramServer.getParam().room_type == 0|| paramServer.getParam().role_type == 2 || micFlag
-                       ? "callList"
-                       : "callList top31"
-                   }
-                 >
-                   {isRtcLists.length
-                     ? isRtcLists.map((e, index) => {
-                         return <CallList isRtc={true} key={index} data={e} />;
-                       })
-                     : null}
-                   {stuList.length
-                     ? stuList.map((e, index) => {
-                         return (
-                           <CallList isRtc={false} key={index} data={e} />
-                         );
-                       })
-                     : null}
-                 </div>
-               </div>
-             </Tabs.Pane>
-           :
-           null
-              }
-             </Tabs>
+                </Tabs.Pane>
+              ) : null}
+              {paramServer.getParam().room_type == 1 ? (
+                <Tabs.Pane key={"2"} tab={"连麦"} style={{ padding: 16 }}>
+                  <div style={{}}>
+                    <div
+                      className={
+                        paramServer.getParam().room_type == 0 ||
+                        paramServer.getParam().role_type == 2 ||
+                        micFlag
+                          ? "callList"
+                          : "callList top31"
+                      }
+                    >
+                      {isRtcLists.length
+                        ? isRtcLists.map((e, index) => {
+                            return (
+                              <CallList isRtc={true} key={index} data={e} />
+                            );
+                          })
+                        : null}
+                      {stuList.length
+                        ? stuList.map((e, index) => {
+                            return (
+                              <CallList isRtc={false} key={index} data={e} />
+                            );
+                          })
+                        : null}
+                    </div>
+                  </div>
+                </Tabs.Pane>
+              ) : null}
+            </Tabs>
           </div>
-          {paramServer.getParam().room_type == 1 && (paramServer.getParam().role_type == 2 || micFlag) && (
-            <ApplyCall
-              applyuserid={applyuserid}
-              applyStatus={applyStatus}
-              ReplyUserState={ReplyUserState}
-              userInRtc={userInRtc}
-            />
-          )}
+          {paramServer.getParam().room_type == 1 &&
+            (paramServer.getParam().role_type == 2 || micFlag) && (
+              <ApplyCall
+                applyuserid={applyuserid}
+                applyStatus={applyStatus}
+                ReplyUserState={ReplyUserState}
+                userInRtc={userInRtc}
+              />
+            )}
         </Loading>
       </div>
     );

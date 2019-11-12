@@ -29,8 +29,36 @@ class Nav extends React.Component {
         this.setState({
             param,
         })
-            
     }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.client && !this.timer) {
+            this.getMonitorData(nextProps.client);
+        }
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.timer);
+    }
+
+    getMonitorData = (client) => {
+        this.timer = setInterval(() => {
+            const localStream = client.getStream();
+            if (localStream) {
+                client.getNetworkStats(localStream.sid, (stats) => {
+                    this.setState({
+                        networkStats: stats
+                    })
+                });
+                client.getVideoStats(localStream.sid, (stats) => {
+                    this.setState({
+                        videoStats: stats
+                    })
+                });
+            }
+        }, 3000);
+    };
+
 
     outRoom = () => {
         window.onbeforeunload = function (e) {
@@ -40,7 +68,6 @@ class Nav extends React.Component {
         return 
         closeIM().then((e) => {
             if(e.data.Code === 200){
-                console.log(paramServer.getParam())
                 window.imClient.ws.close();
                 delete window.imClient;
                 paramServer.setParam({
@@ -59,9 +86,22 @@ class Nav extends React.Component {
         window.open('http://www.ucloud.cn');
     }
 
+    renderVideoStats(videoStats) {
+        const { br = 0, lostpre = 0 } = videoStats;
+
+        const p = (br / 1000).toFixed(2);
+        const x = (lostpre * 100).toFixed(2);
+
+        return <span>当前速率: { p }kb/s, 丢包率: {x}%, </span>
+    }
+    renderNetworkStats(networkStats) {
+        return <span>延迟: { networkStats.rtt }ms</span>
+    }
+
     render() {
         const { param} = this.state;
-        const { monitorData} = this.props;
+        const { videoStats = {}, networkStats = {}} = this.state;
+
         return (
             <div className="nav_main">
                 <Row 
@@ -78,16 +118,11 @@ class Nav extends React.Component {
                                 <Icon type="file-video" />
 
                                 <span className="name_wrapper">
-                                    {param && <b>{param.name ? param.name : param.userId + ' / ' + param.roomId}</b>}
+                                    {param && <b>{param.userId + ' / ' + param.roomId}</b>}
                                 </span>
                                 <span className="monitor_wrapper">
-                                    {monitorData && 
-                                        <b>{
-                                            `( 当前速率: ${monitorData.video.br ? monitorData.video.br : 0}kb/s、
-                                             丢包率: ${monitorData.video.lostpre ? (monitorData.video.lostpre*100).toFixed(2) : 0}% 、
-                                             延迟: ${monitorData.delay}ms) `
-                                        }</b>}
-
+                                    { this.renderVideoStats(videoStats) }
+                                    { this.renderNetworkStats(networkStats) }
                                 </span>
                             </p>
                             <p className="fr">

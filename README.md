@@ -54,188 +54,87 @@ URTCJs 是UCloud推出的一款适用于 web 平台的实时音视频 SDK，
 线上开展音视频对话，对客户的资信情况进行审核，方便金融科技企业实现用户在线签约、视频开户验证以及呼叫中心等功能
 提供云端存储空间及海量数据的处理能力，提供高可用的技术和高稳定的平台
 
-# 5 Demo运行
+# 5 SDK 使用说明 - 简单步骤
+
+## 5.1 创建一个 URTC Client
+
+有两种方式：
+
+- 使用 npm 安装，并将 sdk 使用 ES6 语法作为模块引入
+
+1) 使用 [npm](https://www.npmjs.com/) 或 [Yarn](https://yarnpkg.com/) 安装 sdk:
+
 ```
-npm install //安装依赖
-
-npm run start //运行Demo
-
-npm run build //打包Demo
-``` 
-
-# 6 实现流程
-以下是简单的SDK调用流程，详细API接口请参考接口文档
-
-## 1，引入SDK
-```
-import {URtcDemo} from 'UCloudRtcEngine';
-``` 
-
-## 2，初始化
-``` 
-const URtcDemo = new UCloudRtcEngine();  
-```
-## 3，获取token
-``` 
-const URtcDemo = new UCloudRtcEngine();  
-URtcDemo.getToken({
-    app_id: appId,//控制台创建项目获取到的appkey
-    room_id: roomId,//房间号
-    user_id: userId,//用户id
-    appkey: appkey//控制台创建项目获取到的appkey
-}).then(function(data) {
-    //返回当前用户的token 
-}).catch(function(err){
-    //报错信息 
-})
-``` 
-
-## 4，建立链接
-``` 
-URtcDemo.init({  
-    app_id: appId,//控制台创建项目获取到的appkey
-    room_id: roomId,//房间号
-    user_id: user_id,//用户id
-    token: token,//getToken()获取到的token
-    role_type: role_type, //用户权限0 推流 1 拉流 2 全部
-    room_type: room_type //房间类型 0 rtc小班课 1 rtc 大班课 
-}).then(function(data){  
-//返回链接url 
-}).catch(function(err){
-    //报错信息 
-}) 
-``` 
-
-## 5，开启本地媒体设备
-``` 
-URtcDemo.getLocalStream({
-    media_data: "videoProfile1280*720",//设置视频分辨率
-    video_enable: true,//是否开始摄像头true/false
-    audio_enable: true,//是否开启音频设备true/false
-    media_type: 1 //采集类型 1 摄像头 2 桌面
-}).then(function(data) {
-    //加入媒体流
-}.catch(function(err){
-    //报错信息 
-}) 
+npm install --save urtc-sdk
 ```
 
-## 6，加入房间
-``` 
-URtcDemo.joinRoom({
-    token: token, //getToken()获取到的token
-    role_type: 2, //用户权限0 推流 1 拉流 2 全部
-    room_type: room_type //房间类型 0 rtc小班课 1 rtc 大班课
-}).then(function(e) {
-    //房间信息
-}).catch(function(err){
-    //报错信息 
-}) 
+或
+
+```
+yarn add urtc-sdk
 ```
 
-## 7，发布本地流
-``` 
-URtcDemo.publish({  
-    user_id:user_id,//用户id  
-    media_type:1,//发布的流类型 1 摄像头 2桌面  
-    audio: true,//是否包含音频流 true/false
-    video:true,//是否包含视频流 true/false
-    data:false//是否包含数据流 true/false
-}).then(function(e){  
-    //发布信息 
-}).catch(function(err){
-    //报错信息 
-});  
+2) 项目中引入并创建 client
+
+```
+import { Client } from 'urtc-sdk';
+
+const client = new Client(appId, token); // 默认为直播模式（大班课），若为连麦模式（小班课）时，需要传入第三个参数 { type: 'rtc' }，更多配置见 sdk API 说明
+```
+>由于浏览器的安全策略对除 127.0.0.1 以外的 HTTP 地址作了限制，Web SDK 仅支持  HTTPS协议  或者 http://localhost（http://127.0.0.1），请勿使用  HTTP协议  部署你的项目。
+
+- 直接在页面中用 script 标签将 sdk 引入，此时会有全局对象 UCloudRTC
+
+1) 直接将 sdk 中 lib 目录下的 index.js 使用 script 标签引入
+
+```
+<script type="text/javascript" src="index.js"><script>
 ```
 
-## 8,订阅远端流 
-``` 
-URtcDemo.subscribe({  
-	media_type: 1,//订阅的流类型 1 摄像头 2桌面  
-	stream_id: “stream_id”,//订阅流id  
-	user_id: “user_id",//订阅用户id  
-},{  
-	audio_enable: true,//是否包含音频流 true/false
-	video_enable: true//是否包含数据流 true/false
-}).then(function(e){  
-    //订阅信息  
-}).catch(function(err){
-    //报错信息 
-}) 
+
+2）使用全局对象 UCloudRTC 创建 client
+
+```
+const client = new UCloudRTC.Client(appId, token);
 ```
 
-## 9，获取本地音量数据
-``` 
-URtcDemo.getAudioVolum().then(function(e){  
-     //音量数据  
- }).catch(function(err){
-    //报错信息 
-});
+> 注：创建 client 时传的 token 需要使用 AppId 和 AppKey 等数据生成，测试阶段，可临时使用 sdk 提供的 generateToken 方法生成，但为保证 AppKey 不暴露于公网，在生产环境中强烈建议自建服务，由服务器按规则生成 token 供 sdk 使用。
+
+## 5.2 监听流事件
+
+```
+client.on('stream-published', (stream) => {
+    // 使用 HtmlMediaElement 播放媒体流。将流的 mediaStream 给 Video/Audio 元素的 srcObject 属性，即可播放，注意设置 autoplay 属性以支持视频的自动播放，其他属性请参见 [<video>](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/video)
+    htmlMediaElement.srcObject = stream.mediaStream;
+}); // 监听本地流发布成功事件，在当前用户执行 publish 后，与服务器经多次协商，建立好连接后，会触发此事件
+
+client.on('stream-subscribed', (stream) => {
+    // 使用 HtmlMediaElement 播放媒体流
+    htmlMediaElement.srcObject = stream.mediaStream;
+}); // 监听远端流订阅成功事件，在当前用户执行 subscribe 后，与服务器经多次协商，建立好连接后，会触发此事件
+
+client.on('stream-added', (stream) => {
+    client.subscribe(stream.sid);
+}); // 监听新增远端流事件，在远端用户新发布流后，服务器会推送此事件的消息。注：当刚进入房间时，若房间已有流，也会收到此事件的通知
 ```
 
-## 10，打开/关闭本地音视频
-``` 
-URtcDemo.activeMute({  
-    stream_id: stream_id,//媒流id   
-    stream_type: 1,//1 发布流 2 订阅流  
-    user_id: user_id,//用户id  
-    track_type: 2,//1 视频 2音频  
-    mute: video_enable//true 禁用 false 开启  
-}).then(function(e){  
-    //操作成功  
-}).catch(function(err){
-    //报错信息 
-});
-```  
+## 5.3 加入一个房间，然后发布本地流
 
-## 11，枚举本地媒体设备
-``` 
-URtcDemo.getLocalDevices().then(function(e){  
-    //成功输出本地设备数据  
-    //microphones 音频输入设备列表	  
-    //speakers 音频输出设备列表  
-    //cameras 视频输输入设备列表  
-    //设备列表中的每一个元素类型相同（label：设备名称，deviceId：设备Id）  	
-}).catch(function(err){
-    //报错信息 
-});
-``` 
+```
+client.joinRoom(roomId, userId, () => {
+    client.publish();
+}); // 在 joinRoom 的 onSuccess 回调函数中执行 publish 发布本地流
+```
 
-## 12，离开房间
-``` 
-URtcDemo.leaveRoom({  
-    room_id: room_id//房间id  
-}).then(function(e){  
-    //退出成功  
-},function(err){  
-     //退出失败  
-}); 
-``` 
+## 5.4 取消发布本地流或取消订阅远端流
 
-## 13，开始录制
-``` 
-URtcDemo.startRecord({
-    "mimetype": 3,//1 音频 2 视频 3 音频+视频
-    "mainviewuid": appData.userId,//主窗口位置用户id
-    "mainviewtype": 1,//主窗口的媒体类型 1 摄像头 2 桌面
-    "width": 1280,//320~1920之间
-    "height": 720,//320~1920之间
-    "watermarkpos": 1, //1 左上 2 左下 3 右上 4 右下,
-    "bucket": "urtc-test",
-    "region": 'cn-bj' //所在区域,
-}).then(function (e) {
-    //返回录制文件名
-    //观看录制地址规则 'http://'+ bucket + '.'+ region +'.ufileos.com/' + e.data.FileName  
-}).catch(function(err){
-    //错误信息
-})
-``` 
+```
+client.unpublish();
+client.unsubscibe(streamId);
+```
 
-## 14，结束录制
-``` 
-URtcDemo.stopRecord().then(function (e) {
-    //录制成功  
-}).catch(function(err){
-    //错误信息
-})
-``` 
+## 5.5 退出房间
+
+```
+client.leaveRoom();
+```
