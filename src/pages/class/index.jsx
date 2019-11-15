@@ -22,7 +22,6 @@ import { closeIM } from "../../common/api/chat";
 import "./index.scss";
 import paramServer from "../../common/js/paramServer";
 const { Option, Size } = Select;
-console.log(9999999, sdk.version);
 window.addEventListener("unload", closeIM, false);
 // const config = {
 //   role_type: 2, //用户权限0 推流 1 拉流 2 全部
@@ -34,13 +33,7 @@ window.addEventListener("unload", closeIM, false);
 let URtcDemo = new UCloudRtcEngine();
 
 Logger.setLogLevel("debug");
-if (process.env.REACT_APP_ENV == "pre") {
-  sdk.setServers({
-    api: "https://pre.urtc.com.cn",
-    log: "https://logpre.urtc.com.cn"
-    // signal: "wss://urtc.ibusre.cn:5005"
-  });
-}
+
 
 class ClassRoom extends React.Component {
   constructor(props) {
