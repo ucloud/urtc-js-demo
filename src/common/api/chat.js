@@ -172,13 +172,32 @@ function GetRoomInfo() {
 function GetRoomMsg(StartTime = 0) {
     return axios({
         method: 'post',
-        url: `https://${getText("im")}/GetRoomMsg`,
+        url: `https://${getText("im")}/IM/GetRoomMsg`,
         data: {
             RoomId: paramServer.getParam().roomId,
             StartTime
         },
     })
 }
+
+/**
+ * @description 自定义消息
+ * @param RoomId string  房间ID
+ * @param CustomType str //自定义消息类型，由客户自行定义，可代表不同类型自定义内容，如：广告，视频，游戏，推广。。。。
+ * @param Content json //自定义消息内容,json格式
+ */
+function PushCustomContent(type, content) {
+    return axios({
+        method: 'post',
+        url: `https://${getText("im")}/IM/PushCustomContent`,
+        data: {
+            RoomId: paramServer.getParam().roomId,
+            CustomType: type,
+            Content: content
+        },
+    })
+}
+
 
 
 
@@ -193,4 +212,5 @@ export {
     ReplyCall,
     GetRoomInfo,
     GetRoomMsg,
+    PushCustomContent,
 }

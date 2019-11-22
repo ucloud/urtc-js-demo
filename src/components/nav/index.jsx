@@ -33,7 +33,7 @@ class Nav extends React.Component {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.client && !this.timer) {
-            this.getMonitorData(nextProps.client);
+            this.getMonitorData(nextProps.client, nextProps.role);
         }
     }
 
@@ -41,16 +41,21 @@ class Nav extends React.Component {
         clearInterval(this.timer);
     }
 
-    getMonitorData = (client) => {
+    getMonitorData = (client, role) => {
         this.timer = setInterval(() => {
-            const localStream = client.getStream();
-            if (localStream) {
-                client.getNetworkStats(localStream.sid, (stats) => {
+            let stream;
+            if (role === 'pull') {
+                stream = client.getStreams()[0];
+            } else {
+                stream = client.getStream();
+            }
+            if (stream) {
+                client.getNetworkStats(stream.sid, (stats) => {
                     this.setState({
                         networkStats: stats
                     })
                 });
-                client.getVideoStats(localStream.sid, (stats) => {
+                client.getVideoStats(stream.sid, (stats) => {
                     this.setState({
                         videoStats: stats
                     })

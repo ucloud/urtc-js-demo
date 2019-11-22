@@ -8,8 +8,7 @@ import {
   Modal
 } from "@ucloud-fe/react-components";
 import { log } from "../../common/util/index";
-import sdk, { Client, Logger } from "urtc-sdk";
-import { UCloudRtcEngine } from "ucloud-rtc-sdk";
+import sdk from "urtc-sdk";
 import { getText } from "../../common/dictMap/index";
 import { randNum } from "../../common/util/index";
 // component组件
@@ -30,9 +29,10 @@ window.addEventListener("unload", closeIM, false);
 //   audiointput: null, //麦克风id
 //   resolving_power: null //分辨率
 // };
-let URtcDemo = new UCloudRtcEngine();
 
-Logger.setLogLevel("debug");
+console.log('sdk version ', sdk.version);
+
+const { Client, Logger } = sdk;
 
 
 class ClassRoom extends React.Component {
@@ -75,6 +75,7 @@ class ClassRoom extends React.Component {
     // this.startVideo = this.startVideo.bind(this);
     this.desktop = this.desktop.bind(this);
     this.recording = this.recording.bind(this);
+    this.desktopExtend = this.desktopExtend.bind(this);
   }
 
   componentDidMount() {
@@ -119,10 +120,10 @@ class ClassRoom extends React.Component {
       appData.roomId,
       appData.userId
     );
+    const role = role_type === 0 ? "push" : role_type === 2 ? "push-and-pull" : "pull";
     window.p = this.client = new Client(appData.appId, token, {
       type: appData.room_type === 0 ? "rtc" : "live",
-      role:
-        role_type === 0 ? "push" : role_type === 2 ? "push-and-pull" : "pull"
+      role: role
     });
 
     this.client.on("stream-published", stream => {
@@ -135,12 +136,17 @@ class ClassRoom extends React.Component {
     this.client.on("stream-subscribed", stream => {
       console.log("stream-subscribed ", stream);
 
+      //老师id数组
+      let teacherIdArr = paramServer.getParam().teachList.map(e => {
+        return e.UserId;
+      });
       const { remoteStreams = [] } = this.state;
-      const idx = remoteStreams.findIndex(item => stream.sid === item.sid);
-      if (idx !== -1) {
-        remoteStreams.splice(idx, 1, stream);
-      }
-      this.setState({ remoteStreams });
+      remoteStreams.push(stream);
+      this.updateRtcList(this.client.getStreams());
+      this.setState({
+        remoteStreams,
+        videoList: this.client.getStreams()
+      });
     });
 
     this.client.on("stream-added", stream => {
@@ -148,21 +154,6 @@ class ClassRoom extends React.Component {
 
       this.client.subscribe(
         stream.sid,
-        p => {
-          console.log("subscribe success ", p);
-
-          //老师id数组
-          let teacherIdArr = paramServer.getParam().teachList.map(e => {
-            return e.UserId;
-          });
-          const { remoteStreams = [] } = this.state;
-          remoteStreams.push(stream);
-          this.updateRtcList(this.client.getStreams());
-          this.setState({
-            remoteStreams,
-            videoList: this.client.getStreams()
-          });
-        },
         e => {
           console.log("subscribe failure ", e);
         }
@@ -180,19 +171,16 @@ class ClassRoom extends React.Component {
       this.setState({ remoteStreams });
     });
 
-    this.client.joinRoom(appData.roomId, appData.userId, user => {
+    this.client.joinRoom(appData.roomId, appData.userId, (users, streams) => {
       // this.client.setVideoProfile('1280*720');
+      console.log('current users and streams in room ', users, streams);
 
+      if (role === 'pull') return;
       this.client.publish(
         {
           audio: true,
           video: true,
           screen: false
-        },
-        p => {
-          console.log("publish success ", p);
-
-          // this.getMonitorData();
         },
         e => {
           console.log("publish failure ", e);
@@ -209,7 +197,6 @@ class ClassRoom extends React.Component {
     const _this = this;
     let teacher = paramServer.getParam().teachList[0].UserId;
     console.log(e);
-    console.log(URtcDemo);
     if (e.userId == teacher && appData.room_type == 1) {
       this.setState({
         videoSrcObject: e.stream,
@@ -271,7 +258,6 @@ class ClassRoom extends React.Component {
    * @description 学生上麦操作，推出房间，更改房间类型并重新加入
    */
   online = () => {
-    // let URtcDemo = this.props.URtcDemo;
     const appData = paramServer.getParam();
     this.setState({
       remoteStreams: []
@@ -417,6 +403,28 @@ class ClassRoom extends React.Component {
             video: false,
             screen: true
           },
+          e => {
+            console.log("publish failure ", e);
+          }
+        );
+      },
+      e => {
+        console.log("publish failure ", e);
+      }
+    );
+  }
+  desktopExtend(){
+    this.client.unpublish(
+      p => {
+        console.log("unpublish success ", p);
+        // this.getMonitorData();
+        this.client.publish(
+          {
+            audio: true,
+            video: false,
+            screen: true,
+            extensionId:'mfclkhhafiffoelgjcincmkbemfnokml1'
+          },
           p => {
             console.log("publish success ", p);
             // this.getMonitorData();
@@ -435,6 +443,8 @@ class ClassRoom extends React.Component {
     const { params, localStream, remoteStreams = [], videoList } = this.state;
     const subTeacher = this.filterSubTeacher();
     console.log(localStream, remoteStreams);
+    const param = paramServer.getParam();
+    const role = param.role_type === 0 ? "push" : param.role_type === 2 ? "push-and-pull" : "pull";
     return (
       <div className="classroom_main">
         {/* <div className="start-video fr" onClick={this.startVideo}>
@@ -457,7 +467,11 @@ class ClassRoom extends React.Component {
           <Icon className="stack" type="stack" />
           屏幕共享
         </div>
-        <Nav client={this.client} />
+        <div className="desktop-extend fr" onClick={this.desktopExtend}>
+          <Icon className="stack" type="stack" />
+          插件屏幕共享
+        </div>
+        <Nav client={this.client} role={role}/>
         <div className="classroom_layout clearfix">
           {/* <Sidebar></Sidebar> */}
           <Row

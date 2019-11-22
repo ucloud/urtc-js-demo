@@ -5,7 +5,8 @@ import {
   Input,
   Icon,
   Button,
-  Tabs
+  Tabs,
+  Message
 } from "@ucloud-fe/react-components";
 import axios from "axios";
 import { Client } from "../../common/js/socket";
@@ -14,6 +15,14 @@ import ChatDetail from "../../container/chatDetail/index";
 import StudentItem from "../studentItem/index";
 import ApplyCall from "../applyCall";
 import CallList from "../callList";
+import CustomModal from '../../container/customMessage/customModal'
+import CustomDetail from '../../container/customMessage/customDetail'
+import {
+  List,
+  AutoSizer,
+  CellMeasurer,
+  CellMeasurerCache
+} from "react-virtualized";
 import { getText } from "../../common/dictMap/index";
 import {
   closeIM,
@@ -23,8 +32,14 @@ import {
   GetRoomUser,
   ReplyCall,
   GetRoomInfo,
-  sendApplyCall
+  sendApplyCall,
+  PushCustomContent
 } from "../../common/api/chat";
+import ChatHistory from "../../common/serve/chatServe";
+
+let chatHistory = new ChatHistory({
+  // duration: 15,
+});
 
 let wsUrl = "wss://im.urtc.com.cn/sub";
 let heartCheck = {
@@ -40,6 +55,7 @@ let heartCheck = {
 };
 let chatPending = false;
 let isUnmount = false;
+const cache = new CellMeasurerCache({ defaultHeight: 30, fixedWidth: true });
 
 class Chat extends React.Component {
   constructor(props) {
@@ -61,7 +77,11 @@ class Chat extends React.Component {
       callteamlist: [],
       isRtcList: [],
       roomInfo: null,
-      tabKey: "1"
+      tabKey: "1",
+      scrolling_pos: 0, //聊天列表定位行数
+      customModalVisable: false, //自定义消息编辑弹出框是否显示
+      customDetailShow: false, //自定义显示开关
+      customDetail: null,   //自定义详情
     };
     // window.ws = null;
     this.chatList = React.createRef();
@@ -74,6 +94,13 @@ class Chat extends React.Component {
     let _this = this;
     if (param === null) {
     } else {
+      chatHistory.getMesList(0).then(data => {
+        this.setState({
+          chatList: data,
+          scrolling_pos: data.length - 1 >= 0 ? data.length - 1 : 0
+        });
+      });
+
       this.setState(
         {
           param: param
@@ -93,7 +120,7 @@ class Chat extends React.Component {
             window.imClient = new Client({
               notify: function(data) {
                 let _d = JSON.parse(data);
-                // console.error(_d);
+                console.error(_d);
                 let type = _d.imtype;
                 switch (type) {
                   case "IMMsg":
@@ -113,6 +140,9 @@ class Chat extends React.Component {
                   case "IMCallReply":
                     _this.wsConfig(_d.msg).IMCallReply();
                     break;
+                  case "IMCustomContent":
+                    _this.wsConfig(_d.msg).IMCustomContent();
+                    break;
                 }
               },
               param: {
@@ -128,24 +158,17 @@ class Chat extends React.Component {
       );
     }
   }
-
+  
   // 封装ws接受消息处理的方法
   wsConfig = data => {
     return {
       IMMsg: () => {
-        let arr = this.state.chatList;
-        arr.push(data);
-        this.setState(
-          {
-            chatList: arr
-          },
-          () => {
-            let h = this.chatList.current;
-            if (h) {
-              h.scrollTop = h.scrollHeight;
-            }
-          }
-        );
+        chatHistory.addHistory(data);
+        let arr = chatHistory.getHistory();
+        this.setState({
+          chatList: arr,
+          scrolling_pos: arr.length - 1
+        });
       },
       IMBan: () => {},
       IMUsers: () => {
@@ -224,6 +247,24 @@ class Chat extends React.Component {
         this.setState({
           ReplyUserState: false
         });
+      },
+
+      //自定义消息
+      IMCustomContent: () => {
+        const detail = JSON.parse(data.content)
+        this.setState({
+          customDetailShow: true,
+          customDetail: detail,
+        });
+
+        if(detail.showTime){
+           setTimeout(() => {
+             this.setState({
+               customDetailShow: false
+             });
+           }, detail.showTime * 1000);
+        } 
+       
       }
     };
   };
@@ -295,6 +336,7 @@ class Chat extends React.Component {
       messageValue: e.target.value
     });
   };
+
   // 输入框监听keyup 发送消息
   sendMeg = e => {
     // 暂时没做报错处理
@@ -302,15 +344,25 @@ class Chat extends React.Component {
       !isUnmount && this.sendMsg(this.state.messageValue);
     }
   };
+
   // 按钮发送消息
   sendMessage = () => {
+    // setInterval(() => {
+    //   chatHistory.getAllMes().then(data => {
+    //     console.log(data);
+    //     this.setState({
+    //       chatList: data,
+    //       scrolling_pos: data.length - 1
+    //     });
+    //   });
+    // },5000)
+    // return
     !isUnmount && this.sendMsg(this.state.messageValue);
   };
 
   sendMsg = e => {
-    if (chatPending) {
-      // 限制发送
-    } else {
+    // 限制发送
+    if (!chatPending) {
       chatPending = true;
       pushMessage(e).then(data => {
         chatPending = false;
@@ -350,6 +402,42 @@ class Chat extends React.Component {
     });
   };
 
+  rowRenderer = ({ key, index, isScrolling, isVisible, style, parent }) => {
+    const param = paramServer.getParam();
+    const e = this.state.chatList[index];
+    return (
+      <CellMeasurer
+        cache={cache}
+        columnIndex={0}
+        key={key}
+        parent={parent}
+        rowIndex={index}
+      >
+        <div key={key} style={style}>
+          <ChatDetail
+            key={index}
+            content={e.message}
+            userInfo={JSON.parse(e.userinfo)}
+            isUser={e.userid === param.userId}
+            // time={null}
+            id={e.userid}
+            name={JSON.parse(e.userinfo).userName}
+          />
+        </div>
+      </CellMeasurer>
+    );
+  };
+
+  //关闭自定义消息编辑框,获取数据
+  closeCustomModal = data => {
+    console.log(data);
+    PushCustomContent('Ad',JSON.stringify(data)).then((e) => {
+      this.setState({
+        customModalVisable: false
+      });
+    })
+  };
+
   render() {
     const {
       loading,
@@ -363,7 +451,11 @@ class Chat extends React.Component {
       applyuserid,
       callteamlist,
       roomInfo,
-      tabKey
+      tabKey,
+      scrolling_pos,
+      customModalVisable,
+      customDetailShow, //自定义显示开关
+      customDetail, //自定义详情
     } = this.state;
     let iconType = disableChatBtnStatus ? "ban" : "ban-2";
     let rtcList = this.props.loadList.map(e => {
@@ -385,6 +477,7 @@ class Chat extends React.Component {
     });
 
     let micFlag = paramServer.getParam().role_type == 1 && applyStatus;
+
     return (
       <div className="chat_main">
         <Loading loading={loading} style={{ height: "100%", width: "100%" }}>
@@ -407,19 +500,20 @@ class Chat extends React.Component {
                     }
                     ref={this.chatList}
                   >
-                    {chatList.map((e, index) => {
-                      return (
-                        <ChatDetail
-                          key={index}
-                          content={e.message}
-                          userInfo={JSON.parse(e.userinfo)}
-                          isUser={e.userid === param.userId}
-                          // time={null}
-                          id={e.userid}
-                          name={JSON.parse(e.userinfo).userName}
+                    <AutoSizer>
+                      {({ height, width }) => (
+                        <List
+                          height={height}
+                          rowCount={chatList.length}
+                          rowHeight={cache.rowHeight}
+                          overscanRowCount={20}
+                          deferredMeasurementCache={cache}
+                          scrollToIndex={scrolling_pos}
+                          rowRenderer={this.rowRenderer}
+                          width={width}
                         />
-                      );
-                    })}
+                      )}
+                    </AutoSizer>
                   </div>
 
                   <div className="chat_list_content">
@@ -450,6 +544,16 @@ class Chat extends React.Component {
                       icon={iconType}
                       styleType="border-gray"
                       onClick={this.disableChat}
+                    />
+                    <Button
+                      size="lg"
+                      className="disChat"
+                      loading={false}
+                      icon={"qr-code"}
+                      styleType="border-gray"
+                      onClick={() => {
+                        this.setState({ customModalVisable: true });
+                      }}
                     />
                   </div>
                 </div>
@@ -527,6 +631,15 @@ class Chat extends React.Component {
               />
             )}
         </Loading>
+
+        <CustomModal show={customModalVisable} close={this.closeCustomModal} />
+        {customDetailShow ? (
+          <CustomDetail
+            detail={customDetail}
+            show={customDetailShow}
+            close={() => this.setState({ customDetailShow: false })}
+          />
+        ) : null}
       </div>
     );
   }

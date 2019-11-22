@@ -76,10 +76,17 @@ function isHasUndefined(obj){
     }
 }
 
+//html 预处理
+function escape(str) {
+    return str.replace(/<\/script/g, '<\\/script').replace(/<!--/g, '<\\!--');
+}
+
+
 export {
     randNum, 
     log,
     error, 
     clone,
-    isHasUndefined
+    isHasUndefined,
+    escape
 }
