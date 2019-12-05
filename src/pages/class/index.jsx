@@ -5,10 +5,13 @@ import {
   Button,
   Icon,
   Select,
-  Modal
+  Modal,
+  Radio,
+  Input,
+  Message,
 } from "@ucloud-fe/react-components";
 import { log } from "../../common/util/index";
-import sdk from "urtc-sdk";
+import publishedSDK from "urtc-sdk";
 import { getText } from "../../common/dictMap/index";
 import { randNum } from "../../common/util/index";
 // component组件
@@ -30,10 +33,14 @@ window.addEventListener("unload", closeIM, false);
 //   resolving_power: null //分辨率
 // };
 
+let sdk = publishedSDK;
 console.log('sdk version ', sdk.version);
 
 const { Client, Logger } = sdk;
 
+if (process.env.REACT_APP_ENV == "pre") {
+  Logger.setLogLevel("debug");
+}
 
 class ClassRoom extends React.Component {
   constructor(props) {
@@ -56,12 +63,22 @@ class ClassRoom extends React.Component {
       recordUrlVisible: false,
       recordUrl: "",
       recordText: "开始录制",
+      recordParamModalShow: false,
+      recordParam: {
+        uid: paramServer.getParam().userId, // 主画面用户
+        isAverage: true, //是否均分 true (是) false(否)
+        type: "time", //1(时间水印) 2 (图片水印)  3（文字水印)
+        remarks: "", //（type 2时代表图片水印url type 3代表水印文字）
+        template: 1, //1-9  (模板) 录制信令加了几个参数  已更新到pre小班
+        position: "right-top"
+      },
       appData: {
         appId: paramServer.getParam().appId,
         userId: paramServer.getParam().userId,
         mediaType: paramServer.getParam().mediaType, //桌面和摄像头采集类型
         appkey: paramServer.getParam().appkey
-      }
+      },
+      users: [] // 房间内当前用户
     };
     this.videoList = [];
     this.loadVideo = this.loadVideo.bind(this);
@@ -75,7 +92,6 @@ class ClassRoom extends React.Component {
     // this.startVideo = this.startVideo.bind(this);
     this.desktop = this.desktop.bind(this);
     this.recording = this.recording.bind(this);
-    this.desktopExtend = this.desktopExtend.bind(this);
   }
 
   componentDidMount() {
@@ -149,15 +165,29 @@ class ClassRoom extends React.Component {
       });
     });
 
+    this.client.on("user-added", user => {
+      console.log("user-added ", user);
+      const { users } = this.state;
+      users.push(user);
+      this.setState({ users });
+    });
+
+    this.client.on("user-removed", user => {
+      console.log("user-removed ", user);
+      const { users } = this.state;
+      let idx = users.findIndex(item => item.uid === user.uid);
+      if (idx >= 0) {
+        users.splice(idx, 1);
+      }
+      this.setState({ users });
+    });
+
     this.client.on("stream-added", stream => {
       console.log("stream-added ", stream);
 
-      this.client.subscribe(
-        stream.sid,
-        e => {
-          console.log("subscribe failure ", e);
-        }
-      );
+      this.client.subscribe(stream.sid, e => {
+        console.log("subscribe failure ", e);
+      });
     });
 
     this.client.on("stream-removed", stream => {
@@ -173,7 +203,7 @@ class ClassRoom extends React.Component {
 
     this.client.joinRoom(appData.roomId, appData.userId, (users, streams) => {
       // this.client.setVideoProfile('1280*720');
-      console.log('current users and streams in room ', users, streams);
+      console.log("current users and streams in room ", users, streams);
 
       if (role === 'pull') return;
       this.client.publish(
@@ -327,16 +357,42 @@ class ClassRoom extends React.Component {
     );
   }
 
-  recording() {
+  recording = () => {
     const appData = paramServer.getParam();
+    const {recordParam } = this.state
+    console.error(recordParam);
 
     if (this.state.recording == false) {
       const bucket = "urtc-test";
       const region = "cn-bj";
-
+      let obj = {
+        ...recordParam,
+      };
+      const {
+        uid,
+        isAverage,
+        type,
+        template,
+        position,
+      } = recordParam;
+      let { remarks } = recordParam;
+      if (type === 'time'){
+        remarks = '';
+      } 
+      console.error(obj);
       this.client.startRecording(
         {
-          waterMarkPosition: "left-top",
+          // waterMarkPosition: "left-top",
+          waterMark: {
+            position,
+            type,
+            remarks,
+          },
+          mixStream: {
+            uid: uid,
+            template,
+            isAverage,
+          },
           bucket: bucket,
           region: region
         },
@@ -349,6 +405,7 @@ class ClassRoom extends React.Component {
             recordUrl: url,
             recordText: "结束录制"
           });
+          console.error("开始录制成功");
         }
       );
       this.setState({
@@ -372,7 +429,7 @@ class ClassRoom extends React.Component {
         recording: false
       });
     }
-  }
+  };
 
   filterSubTeacher = () => {
     const { remoteStreams = [] } = this.state;
@@ -393,54 +450,82 @@ class ClassRoom extends React.Component {
     }
   };
   desktop() {
-    this.client.unpublish(
-      p => {
-        console.log("unpublish success ", p);
-        // this.getMonitorData();
-        this.client.publish(
-          {
-            audio: true,
-            video: false,
-            screen: true
-          },
-          e => {
-            console.log("publish failure ", e);
-          }
-        );
+    this.client.switchScreen(() => {
+      console.log('screen success');
+    }, (err) => {
+      console.log('screen failed');
+      this.urtcInit(this.state.params.role_type);
+    });
+  }
+
+  updataRecordParam = (type, e) => {
+    console.log('updataRecordParam ', type, e)
+    let obj = this.state.recordParam;
+    if (type == "type" || type == "isAverage" || type == "template" || type == "uid") {
+      obj[type] = e;
+    } else if (type == "template") {
+      obj[type] = e.target.value - 0;
+    } else {
+      obj[type] = e.target.value;
+    }
+    this.setState({
+      recordParam: obj
+    });
+  };
+
+  checkParamStart = () => {
+    const { recordParam } = this.state;
+    this.setState(
+      {
+        recordParamModalShow: false,
+        recording: false
       },
-      e => {
-        console.log("publish failure ", e);
+      () => {
+        this.recording();
       }
     );
+  };
+
+  startRecord = () => {
+    const {recording} = this.state
+    if(!recording){
+      this.setState({
+        recordParamModalShow: true
+      })
+    }else{
+      this.recording()
+    }
   }
-  desktopExtend(){
-    this.client.unpublish(
-      p => {
-        console.log("unpublish success ", p);
-        // this.getMonitorData();
-        this.client.publish(
-          {
-            audio: true,
-            video: false,
-            screen: true,
-            extensionId:'mfclkhhafiffoelgjcincmkbemfnokml1'
-          },
-          p => {
-            console.log("publish success ", p);
-            // this.getMonitorData();
-          },
-          e => {
-            console.log("publish failure ", e);
-          }
-        );
-      },
-      e => {
-        console.log("publish failure ", e);
-      }
-    );
+
+  renderMixStreamUser = () => {
+    const { users, appData } = this.state;
+    const options = users.map(user => {
+      return <Option key={user.uid} value={user.uid}>{user.uid}</Option>
+    });
+    options.unshift(<Option key={appData.userId} value={appData.userId}>当前用户</Option>);
+    return options;
   }
+
+  createOption = (num) => {
+    let arr = []
+    for (let index = 0; index < num; index++) {
+      arr.push(
+        <Option key={index+1} value={index+1}>{index+1}</Option>
+      );
+    }
+    return arr
+  }
+
+
   render() {
-    const { params, localStream, remoteStreams = [], videoList } = this.state;
+    const {
+      params,
+      localStream,
+      remoteStreams = [],
+      videoList,
+      recordParamModalShow,
+      recordParam,
+    } = this.state;
     const subTeacher = this.filterSubTeacher();
     console.log(localStream, remoteStreams);
     const param = paramServer.getParam();
@@ -452,7 +537,13 @@ class ClassRoom extends React.Component {
                 开启视频
         </div> */}
 
-        <div className="recording-video fr " onClick={this.recording}>
+        {/* 录制 */}
+        <div
+          className="recording-video fr "
+          onClick={() => {
+            this.startRecord();
+          }}
+        >
           <Icon
             className={this.state.recording ? "recording" : ""}
             type="sxt"
@@ -467,11 +558,7 @@ class ClassRoom extends React.Component {
           <Icon className="stack" type="stack" />
           屏幕共享
         </div>
-        <div className="desktop-extend fr" onClick={this.desktopExtend}>
-          <Icon className="stack" type="stack" />
-          插件屏幕共享
-        </div>
-        <Nav client={this.client} role={role}/>
+        <Nav client={this.client} role={role} />
         <div className="classroom_layout clearfix">
           {/* <Sidebar></Sidebar> */}
           <Row
@@ -483,8 +570,8 @@ class ClassRoom extends React.Component {
               <SubscribeVideo
                 isTeacther={
                   params &&
-                  (params.room_type == 0 ||
-                    (params.room_type == 1 && params.role_type == 2))
+                  (params.room_type === 0 ||
+                    (params.room_type === 1/* && params.role_type === 2 移动端未判断用户角色，为三端统一，暂时注释掉*/))
                 }
                 localStream={localStream}
                 streams={remoteStreams || []}
@@ -495,8 +582,8 @@ class ClassRoom extends React.Component {
               {/* <Localvideo></Localvideo> */}
               {params && (
                 <div className="localvideo_main">
-                  {params.room_type == 0 ||
-                  (params.room_type == 1 && params.role_type == 2) ? (
+                  {params.room_type === 0 ||
+                    (params.room_type === 1/* && params.role_type === 2 移动端未判断用户角色，为三端统一，暂时注释掉*/) ? (
                     //小班课显示本地
                     <ReactPlayer
                       key={localStream && localStream.sid}
@@ -559,6 +646,7 @@ class ClassRoom extends React.Component {
             </Select>
           </div>
         </Modal>
+
         <Modal
           visible={this.state.recordUrlVisible}
           onClose={() =>
@@ -581,6 +669,108 @@ class ClassRoom extends React.Component {
             </a>
             {/* 录制结束，请到本地服务录制目录查看 */}
           </div>
+        </Modal>
+
+        {/*设置录制参数 */}
+
+        <Modal
+          visible={recordParamModalShow}
+          onClose={() =>
+            this.setState({
+              recordParamModalShow: false
+            })
+          }
+          onOk={() => this.checkParamStart()}
+          isAutoClose={false}
+          size={"md"}
+          title="设置录制参数"
+        >
+          <div className="form-row device-id">
+            <span style={{ display: "inline-block", width: "80px" }}>
+              主画面用户
+            </span>
+            <Select
+              onChange={this.updataRecordParam.bind(this, "uid")}
+              size="md"
+              value={recordParam.uid}
+              style={{ width: "144px" }}
+            >
+              { this.renderMixStreamUser() }
+            </Select>
+          </div>
+          <div className="form-row device-id">
+            <span style={{ display: "inline-block", width: "80px" }}>
+              录制流数
+            </span>
+            <Select
+              onChange={this.updataRecordParam.bind(this, "template")}
+              size="md"
+              value={recordParam.template}
+              style={{ width: "144px" }}
+            >
+              {this.createOption(9)}
+            </Select>
+          </div>
+          <div className="form-row device-id">
+            <span style={{ display: "inline-block", width: "80px" }}>
+              混流风格
+            </span>
+            <div style={{ display: "inline-block" }}>
+              <Radio.Group
+                onChange={this.updataRecordParam.bind(this, "isAverage")}
+                size="md"
+                value={recordParam.isAverage}
+                disabled={false}
+              >
+                <Radio key={1} value={true}>
+                  平铺
+                </Radio>
+                <Radio key={2} value={false}>
+                  垂直
+                </Radio>
+              </Radio.Group>
+            </div>
+          </div>
+
+          <div className="form-row device-id">
+            <span style={{ display: "inline-block", width: "80px" }}>
+              水印类型
+            </span>
+
+            <div style={{ display: "inline-block" }}>
+              <Radio.Group
+                onChange={this.updataRecordParam.bind(this, "type")}
+                size="md"
+                value={recordParam.type}
+                disabled={false}
+              >
+                <Radio key={1} value={"time"}>
+                  时间水印
+                </Radio>
+                <Radio key={2} value={"image"}>
+                  图片水印
+                </Radio>
+                <Radio key={3} value={"text"}>
+                  文字水印
+                </Radio>
+              </Radio.Group>
+            </div>
+          </div>
+          {recordParam.type !== "time" && (
+            <div className="form-row device-id">
+              <span style={{ display: "inline-block", width: "80px" }}>
+                水印内容
+              </span>
+              <div style={{ display: "inline-block" }}>
+                <Input
+                  onChange={this.updataRecordParam.bind(this, "remarks")}
+                  size="md"
+                  value={recordParam.remarks}
+                  placeholde="图片水印填写Url"
+                />
+              </div>
+            </div>
+          )}
         </Modal>
       </div>
     );

@@ -113,7 +113,7 @@ class Chat extends React.Component {
               loading: false
             });
             let param = paramServer.getParam();
-
+            console.log(param);
             this.getUserList();
             this.getRoomInfo();
             // ws操作

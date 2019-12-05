@@ -118,7 +118,7 @@ Client.prototype.createConnect = function (max, delay) {
             let _d = self.options.param;
             var token = `{"mid":${_d.MId}, "room_id":"live://${_d.RoomId}", "platform":"web", "accepts":[1000,1001,1002]}`;
             // var token = '{"mid":123, "room_id":"live://1000", "platform":"web", "accepts":[1000,1001,1002]}'
-
+            console.log(token)
             var headerBuf = new ArrayBuffer(rawHeaderLen);
             var headerView = new DataView(headerBuf, 0);
             var bodyBuf = textEncoder.encode(token);
