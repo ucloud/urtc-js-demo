@@ -8,6 +8,8 @@
 import {
     getText
 } from '../dictMap/index';
+import paramServer from './paramServer'
+
 const rawHeaderLen = 16;
 const packetOffset = 0;
 const headerOffset = 4;
@@ -116,7 +118,8 @@ Client.prototype.createConnect = function (max, delay) {
 
         function auth() {
             let _d = self.options.param;
-            var token = `{"mid":${_d.MId}, "room_id":"live://${_d.RoomId}", "platform":"web", "accepts":[1000,1001,1002]}`;
+            var token = `{"mid":${_d.MId}, "room_id":"live://${paramServer.getParam().appId +_d.RoomId}", "platform":"web", "accepts":[1000,1001,1002]}`;
+            // var token = `{"mid":${_d.MId}, "room_id":"live://${_d.RoomId}", "platform":"web", "accepts":[1000,1001,1002]}`;
             // var token = '{"mid":123, "room_id":"live://1000", "platform":"web", "accepts":[1000,1001,1002]}'
             console.log(token)
             var headerBuf = new ArrayBuffer(rawHeaderLen);

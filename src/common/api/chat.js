@@ -18,6 +18,7 @@ function closeIM (){
         data: {
             UserId: paramServer.getParam().userId,
             RoomId: paramServer.getParam().roomId,
+            AppId: paramServer.getParam().appId,
         },
     })
 } 
@@ -29,6 +30,7 @@ function contectWs (){
         data: {
             UserId: paramServer.getParam().userId,
             RoomId: paramServer.getParam().roomId,
+            AppId: paramServer.getParam().appId,
             // Uuid: this.state.param.characterValue,
             ConnectType: paramServer.getParam().role_type == 2 ? 'Create' : '', //学生不填
         },
@@ -48,6 +50,7 @@ function pushMessage(msg){
         data: {
             UserId: paramServer.getParam().userId,
             RoomId: paramServer.getParam().roomId,
+            AppId: paramServer.getParam().appId,
             Msg: msg
         },
     })
@@ -66,6 +69,7 @@ function banRoom(type,num) {
         data: {
             UserId: num,
             RoomId: paramServer.getParam().roomId,
+            AppId: paramServer.getParam().appId,
             BanType:!!type ? 'ban':'unban'
         },
     })
@@ -81,6 +85,7 @@ function GetRoomUser(type) {
         url: `https://${getText("im")}/IM/GetRoomUser`,
         data: {
             RoomId: paramServer.getParam().roomId,
+            AppId: paramServer.getParam().appId,
         },
     })
    
@@ -100,6 +105,7 @@ function AuthCall(open) {
         data: {
             RoomId: paramServer.getParam().roomId,
             UserId: paramServer.getParam().userId,
+            AppId: paramServer.getParam().appId,
             Operation: flag,
         },
     })
@@ -121,6 +127,7 @@ function sendApplyCall(ReplyUserId, status) {
         data: {
             RoomId: paramServer.getParam().roomId,
             ApplyUserId: paramServer.getParam().userId,
+            AppId: paramServer.getParam().appId,
             ReplyUserId, 
             Operation: flag
 
@@ -141,6 +148,7 @@ function ReplyCall(ReplyUserId, status) {
         url: `https://${getText("im")}/Call/ReplyCall`,
         data: {
             RoomId: paramServer.getParam().roomId,
+            AppId: paramServer.getParam().appId,
             ReplyUserId,
             Operation: flag 
         },
@@ -159,6 +167,7 @@ function GetRoomInfo() {
         url: `https://${getText("im")}/GetRoomInfo`,
         data: {
             RoomId: paramServer.getParam().roomId,
+            AppId: paramServer.getParam().appId,
         },
     })
 }
@@ -175,6 +184,7 @@ function GetRoomMsg(StartTime = 0) {
         url: `https://${getText("im")}/IM/GetRoomMsg`,
         data: {
             RoomId: paramServer.getParam().roomId,
+            AppId: paramServer.getParam().appId,
             StartTime
         },
     })
@@ -192,6 +202,7 @@ function PushCustomContent(type, content) {
         url: `https://${getText("im")}/IM/PushCustomContent`,
         data: {
             RoomId: paramServer.getParam().roomId,
+            AppId: paramServer.getParam().appId,
             CustomType: type,
             Content: content
         },

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Loading } from '@ucloud-fe/react-components';
+import classnames from 'unique-classnames';
 import {
     WhiteWebSdk,
     RoomWhiteboard,
@@ -187,8 +188,8 @@ class Write extends React.Component {
         room.refreshViewSize();
 
         // hack - 去除鼠标滚轮缩放画布，改为拖放画布行为
-        const onMouseWheel = room.cameraBoundState.cameraman.onMouseWheel.bind(room.cameraBoundState.cameraman);
-        room.cameraBoundState.cameraman.onMouseWheel = function(e) {
+        const onMouseWheel = room.cameraman.onMouseWheel.bind(room.cameraman);
+        room.cameraman.onMouseWheel = function(e) {
             const { scale, offsetPoint } = getOffsetPointAndScale(e.nativeEvent);
             e.scale = scale;
             e.offsetPoint = offsetPoint;
@@ -283,8 +284,11 @@ class Write extends React.Component {
     // }
 
     render() {
+        const { className } = this.props;
+
+        const classes = classnames('write_main', className);
         return (
-            <div className="write_main">
+            <div className={classes}>
                 {/*
                 <div style={{position:'absolute',top:0,left:0,zIndex:999}}>{this.state.roomState && this.state.roomState.zoomScale}</div>
                 */}

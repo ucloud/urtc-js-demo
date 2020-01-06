@@ -45,7 +45,7 @@ class Nav extends React.Component {
         this.timer = setInterval(() => {
             let stream;
             if (role === 'pull') {
-                stream = client.getStreams()[0];
+                stream = client.getRemoteStreams()[0];
             } else {
                 stream = client.getStream();
             }
@@ -95,9 +95,8 @@ class Nav extends React.Component {
         const { br = 0, lostpre = 0 } = videoStats;
 
         const p = (br / 1000).toFixed(2);
-        const x = (lostpre * 100).toFixed(2);
 
-        return <span>当前速率: { p }kb/s, 丢包率: {x}%, </span>
+        return <span>当前速率: { p }kb/s, 丢包率: {lostpre}%, </span>
     }
     renderNetworkStats(networkStats) {
         return <span>延迟: { networkStats.rtt }ms</span>

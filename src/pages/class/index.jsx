@@ -12,6 +12,7 @@ import {
 } from "@ucloud-fe/react-components";
 import { log } from "../../common/util/index";
 import publishedSDK from "urtc-sdk";
+import unpublishedSDK from "@/sdk";
 import { getText } from "../../common/dictMap/index";
 import { randNum } from "../../common/util/index";
 // component组件
@@ -153,15 +154,15 @@ class ClassRoom extends React.Component {
       console.log("stream-subscribed ", stream);
 
       //老师id数组
-      let teacherIdArr = paramServer.getParam().teachList.map(e => {
-        return e.UserId;
-      });
+      // let teacherIdArr = paramServer.getParam().teachList.map(e => {
+      //   return e.UserId;
+      // });
       const { remoteStreams = [] } = this.state;
       remoteStreams.push(stream);
-      this.updateRtcList(this.client.getStreams());
+      this.updateRtcList(this.client.getRemoteStreams());
       this.setState({
         remoteStreams,
-        videoList: this.client.getStreams()
+        videoList: this.client.getRemoteStreams()
       });
     });
 
@@ -327,6 +328,15 @@ class ClassRoom extends React.Component {
       settingVisible: true
     });
 
+    this.client.getLoudspeakers(
+      getLoudspeakers => {
+        console.log("get cameras success ", getLoudspeakers);
+      },
+      e => {
+        console.log("get cameras failure ", e);
+      }
+    );
+
     this.client.getCameras(
       cameras => {
         console.log("get cameras success ", cameras);
@@ -382,7 +392,6 @@ class ClassRoom extends React.Component {
       console.error(obj);
       this.client.startRecording(
         {
-          // waterMarkPosition: "left-top",
           waterMark: {
             position,
             type,
@@ -454,7 +463,7 @@ class ClassRoom extends React.Component {
       console.log('screen success');
     }, (err) => {
       console.log('screen failed');
-      this.urtcInit(this.state.params.role_type);
+      // this.urtcInit(this.state.params.role_type);
     });
   }
 

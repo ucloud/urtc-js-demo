@@ -99,6 +99,7 @@ class Login extends React.Component {
         UserId: appData.userId,
         RoomId: roomId,
         Uuid: "",
+        AppId: paramServer.getParam().appId,
         UserInfo: { userName: name, userType: role_type },
         UserType: role_type == 2 ? "admin" : "default"
       }

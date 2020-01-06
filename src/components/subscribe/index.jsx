@@ -18,9 +18,8 @@ class SubscribeVideo extends React.Component {
   }
   // 根据流提供ID，从学生列表里获取学生姓名
   getUserInfoName = id => {
-    let arr = paramServer
-      .getParam()
-      .userList.concat(paramServer.getParam().teachList);
+    const userList = paramServer.getParam().userList || [];
+    const arr = userList.concat(paramServer.getParam().teachList || []);
     let name = "";
     arr.map(data => {
       if (data.UserId == id) {
