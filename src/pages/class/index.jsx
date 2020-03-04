@@ -11,7 +11,7 @@ import {
   Message,
 } from "@ucloud-fe/react-components";
 import { log } from "../../common/util/index";
-import publishedSDK from "urtc-sdk";
+import publishedSDK from "../../../sdk/index";
 import unpublishedSDK from "@/sdk";
 import { getText } from "../../common/dictMap/index";
 import { randNum } from "../../common/util/index";
@@ -26,6 +26,7 @@ import "./index.scss";
 import paramServer from "../../common/js/paramServer";
 const { Option, Size } = Select;
 window.addEventListener("unload", closeIM, false);
+console.log(11111111)
 // const config = {
 //   role_type: 2, //用户权限0 推流 1 拉流 2 全部
 //   audiooutput: null, //扬声器id
@@ -407,7 +408,7 @@ class ClassRoom extends React.Component {
         },
         record => {
           console.log("start recording success ", record);
-          const url = `http://${bucket}.${region}.ufileos.com/${record.FileName}`;
+          const url = `http://${bucket}.${region}.ufileos.com/${record.FileName}.mp4`;
           // console.error(url);
 
           this.setState({
