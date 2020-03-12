@@ -1,9 +1,8 @@
 import React from "react";
-import { Button } from "@ucloud-fe/react-components";
 import "./index.scss";
 import ReactPlayer from "react-player";
-import { withRouter } from "react-router-dom";
 import paramServer from "../../common/js/paramServer";
+import { isIOS } from '../../common/browser';
 
 class SubscribeVideo extends React.Component {
   constructor(props) {
@@ -12,6 +11,7 @@ class SubscribeVideo extends React.Component {
       currActive: ""
     };
     // this.online = this.online.bind(this);
+    this.isIOS = isIOS();
   }
   componentWillReceiveProps() {
     this.data = this.props;
@@ -22,18 +22,21 @@ class SubscribeVideo extends React.Component {
     const arr = userList.concat(paramServer.getParam().teachList || []);
     let name = "";
     arr.map(data => {
-      if (data.UserId == id) {
+      console.log(data.UserInfo !== "null")
+      if (data.UserId === id && data.UserInfo !== "null") {
         let n = JSON.parse(data.UserInfo).userName;
         name = n;
+        return null
       }
-    });
+      return null
+    })
+    console.log(name ? name : id)
     return name ? name : id;
   };
 
   renderStream(stream) {
     if (!stream.mediaStream) return;
     const name = this.getUserInfoName(stream.uid);
-    console.log(stream.muteAudio);
     return (
       <div
         className="video_wrapper"
@@ -47,6 +50,9 @@ class SubscribeVideo extends React.Component {
           url={stream.mediaStream}
           playing
           muted={false}
+          playing
+          playsinline
+          controls={this.isIOS}
         />
         <div className="video_userInfo">
           <span
@@ -65,7 +71,7 @@ class SubscribeVideo extends React.Component {
     return (
       <div className={"subscribe "}>
         {/* <Button onClick={this.online}>上麦</Button> */}
-        {!isTeacther && localStream != undefined && (
+        {!isTeacther && localStream !== undefined && (
           <div
             className="video_wrapper"
             style={{ display: "inline-block", marginRight: "5px" }}
@@ -78,6 +84,9 @@ class SubscribeVideo extends React.Component {
               url={localStream && localStream.mediaStream}
               playing
               muted={true}
+              playing
+              playsinline
+              controls={this.isIOS}
             />
             <div className="video_userInfo">
               <span
@@ -93,7 +102,8 @@ class SubscribeVideo extends React.Component {
 
         <div className="subscribe_content">
           {streams.map((stream, index) => {
-            if (!isTeacther && index == 0) {
+            if (!isTeacther && index === 0) {
+              return null
             } else {
               return this.renderStream(stream);
             }

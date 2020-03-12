@@ -1,18 +1,11 @@
-/* 
-    聊天室学生列表item组件
-    props:{
-
-    }
-*/
-
 import React from 'react';
 import {
     Button, Icon
 } from '@ucloud-fe/react-components';
-
 import paramServer from '../../common/js/paramServer';
-import { banRoom} from '../../common/api/chat'
+import { imClient } from "../../common/serve/imServe.js";
 import './index.scss';
+
 function ranColor() {
     let r = Math.floor(Math.random() * 255),
         g = Math.floor(Math.random() * 255),
@@ -38,20 +31,23 @@ class StudentItem extends React.Component {
         })
     }
 
-    outUser = () => {
+    ban = () => {
         let flag = this.state.isDisable;
-        banRoom(!flag, this.props.data.UserId).then(e => {
-            if(e.data.Code === 200){
-                this.setState({
-                    isDisable: !flag,
-                })
-            }
-        })
+        imClient.banRoom(flag ? "unban" : "ban",this.props.id, data => {
+            this.setState({
+                isDisable: !flag
+            });
+        });
+    
     }
 
     render() {
         const { param, isDisable } = this.state;
-        let userInfo = JSON.parse(this.props.data.UserInfo)
+        const {
+            name,
+            data,
+            id,
+        } = this.props 
         return (
             <div className="studentItem_main clearfix" >
                 <div className="studentItem_content fl">
@@ -59,14 +55,14 @@ class StudentItem extends React.Component {
                         <span className="studentItem_head_bg" style={{ backgroundColor: this.state.color}}>
                         </span>
                         <span className="studentItem_head_name">
-                            {userInfo.userName}
+                            {name ? name : id}
                         </span>
                     </p>
                 </div>
                 {param !== null && this.props.isTeacher?
                     <div className="fr btn_wrapper">
                         <Button shape="circle"  
-                        onClick={this.outUser} 
+                        onClick={this.ban} 
                         disabled={!this.props.isTeacher} 
                         style={{ borderWidth: isDisable ? '0px' : '1px'}}
                         styleType="border" size="sm">

@@ -3,13 +3,11 @@ import "../../common/scss/index.scss";
 import "./index.scss";
 import {
   Input,
-  Icon,
-  Button,
   Form,
   Modal,
   Message,
 } from "@ucloud-fe/react-components";
-const { Item, Size } = Form;
+const { Item } = Form;
 const itemLayout = {
   labelCol: {
     span: 2
@@ -26,7 +24,6 @@ const itemLayout = {
   * show  bool  显示隐藏状态
   * close func  关闭函数
  * }
- * 
  */
 export default class CustomModal extends React.Component {
   constructor(props) {
@@ -63,6 +60,7 @@ export default class CustomModal extends React.Component {
   }
 
   close = () => {
+    this.props.close()
     this.setState({
       visible: false
     });
@@ -72,7 +70,7 @@ export default class CustomModal extends React.Component {
   submit = () => {
     let { param } = this.state;
     if(param.jumpUrl && param.imgUrl && param.price && param.text){
-      this.props.close && this.props.close(param);
+      this.props.sub && this.props.sub(param);
     }else{
       Message.error('参数不全，请补全')
     }

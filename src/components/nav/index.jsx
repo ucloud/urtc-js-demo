@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react';
 import {
     Row, Col, Icon
@@ -6,14 +7,9 @@ import {
    withRouter
 } from 'react-router-dom';
 import { randNum } from '../../common/util/index';
-
-import { isHasUndefined} from '../../common/util/index.js';
 import paramServer from '../../common/js/paramServer';
-import {
-    closeIM
-} from '../../common/api/chat';
-import './index.scss';
 
+import './index.scss';
 
 class Nav extends React.Component {
     constructor(props) {
@@ -22,6 +18,7 @@ class Nav extends React.Component {
             loading: false,
             param:null,
         };
+        this.isWatching = false;
     }
 
     componentDidMount() {
@@ -35,10 +32,25 @@ class Nav extends React.Component {
         if (nextProps.client && !this.timer) {
             this.getMonitorData(nextProps.client, nextProps.role);
         }
+        if (nextProps.client && !this.isWatching) {
+            nextProps.client.on('network-quality', this.getNetworkQuality);
+            this.isWatching = true;
+        }
     }
 
     componentWillUnmount() {
+        const { client } = this.props;
+        if (client) {
+            client.off('network-quality', this.getNetworkQuality);
+            this.isWatching = false;
+        }
         clearInterval(this.timer);
+    }
+
+    getNetworkQuality = (quality) => {
+        this.setState({
+            networkQuality: quality
+        });
     }
 
     getMonitorData = (client, role) => {
@@ -71,20 +83,6 @@ class Nav extends React.Component {
         }
         window.location.reload();
         return 
-        closeIM().then((e) => {
-            if(e.data.Code === 200){
-                window.imClient.ws.close();
-                delete window.imClient;
-                paramServer.setParam({
-                    appId: 'URtc-h4r1txxy',
-                    userId: randNum(3),
-                    // userId: '333',
-                    mediaType: '1', //桌面和摄像头采集类型
-                    appkey: '9129304dbf8c5c4bf68d70824462409f',
-                })
-                this.props.history.push({ pathname: `/` })
-            }
-        })
     }
 
     goUcloud = () => {
@@ -102,9 +100,51 @@ class Nav extends React.Component {
         return <span>延迟: { networkStats.rtt }ms</span>
     }
 
+    renderSignal(quality) {
+        let color = '#bbbbbb';
+        let tip = '质量未知';
+        switch (quality) {
+            case '0':
+                color = '#bbbbbb';
+                tip = '质量未知';
+                break;
+            case '1':
+                color = '#4cd964';
+                tip = '质量优秀';
+                break;
+            case '2':
+                color = '#0cd964';
+                tip = '质量良好';
+                break;
+            case '3':
+                color = '#f9ce1d';
+                tip = '质量一般';
+                break;
+            case '4':
+                color = '#fc946a';
+                tip = '质量较差';
+                break;
+            case '5':
+                color = '#f0946a';
+                tip = '质量糟糕';
+                break;
+            case '6':
+                color = '#f44336';
+                tip = '连接断开';
+                break;
+            default:
+        }
+        return (
+            <span style={{marginLeft: '10px'}}>网络：
+                <span className="icon icon__signal" style={{fontSize: '16px', color: color}}></span>
+            </span>
+        );
+    }
+
     render() {
         const { param} = this.state;
-        const { videoStats = {}, networkStats = {}} = this.state;
+        const { videoStats = {}, networkStats = {}, networkQuality = {} } = this.state;
+        const { uplink = '0' } = networkQuality;
 
         return (
             <div className="nav_main">
@@ -125,8 +165,9 @@ class Nav extends React.Component {
                                     {param && <b>{param.userId + ' / ' + param.roomId}</b>}
                                 </span>
                                 <span className="monitor_wrapper">
-                                    { this.renderVideoStats(videoStats) }
+                                    {/* this.renderVideoStats(videoStats) */}
                                     { this.renderNetworkStats(networkStats) }
+                                    { this.renderSignal(uplink) }
                                 </span>
                             </p>
                             <p className="fr">

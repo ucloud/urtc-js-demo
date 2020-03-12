@@ -5,6 +5,7 @@
  * @LastEditTime: 2019-09-04 14:14:35
  * @LastEditors: Please set LastEditors
  */
+/* eslint-disable */
 import {
     getText
 } from '../dictMap/index';
@@ -51,7 +52,6 @@ Client.prototype.createConnect = function (max, delay) {
         }
 
         self.ws.onmessage = function (evt) {
-            var notify = self.options.notify;
             var data = evt.data;
             var dataView = new DataView(data, 0);
             var packetLen = dataView.getInt32(packetOffset);

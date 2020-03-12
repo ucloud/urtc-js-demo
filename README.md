@@ -1,6 +1,6 @@
 # URTC web demo2
 
-新版 [urtc-sdk-web](https://github.com/ucloud/urtc-sdk-web) 使用示例
+新版 [urtc-sdk-web](https://git.ucloudadmin.com/urtc/sdk/urtc-sdk-web) 使用示例
 
 启动
 

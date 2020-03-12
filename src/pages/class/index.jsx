@@ -2,45 +2,33 @@ import React from "react";
 import {
   Row,
   Col,
-  Button,
   Icon,
   Select,
   Modal,
   Radio,
   Input,
-  Message,
 } from "@ucloud-fe/react-components";
-import { log } from "../../common/util/index";
-import publishedSDK from "../../../sdk/index";
-import unpublishedSDK from "@/sdk";
-import { getText } from "../../common/dictMap/index";
-import { randNum } from "../../common/util/index";
+import publishedSDK from "urtc-sdk";
 // component组件
 import Nav from "../../components/nav/index";
 import Write from "../../components/write/index";
+import Exercrise from "../../components/exerscrise/index";
 import Chat from "../../components/chat/index";
 import ReactPlayer from "react-player";
 import SubscribeVideo from "../../components/subscribe/index";
-import { closeIM } from "../../common/api/chat";
 import "./index.scss";
+import { imClient } from "../../common/serve/imServe.js";
 import paramServer from "../../common/js/paramServer";
+import { isIOS } from "../../common/browser";
 const { Option, Size } = Select;
-window.addEventListener("unload", closeIM, false);
-console.log(11111111)
-// const config = {
-//   role_type: 2, //用户权限0 推流 1 拉流 2 全部
-//   audiooutput: null, //扬声器id
-//   video: null, //视频设备id
-//   audiointput: null, //麦克风id
-//   resolving_power: null //分辨率
-// };
 
 let sdk = publishedSDK;
+
 console.log('sdk version ', sdk.version);
 
 const { Client, Logger } = sdk;
 
-if (process.env.REACT_APP_ENV == "pre") {
+if (process.env.REACT_APP_ENV === "pre") {
   Logger.setLogLevel("debug");
 }
 
@@ -72,7 +60,8 @@ class ClassRoom extends React.Component {
         type: "time", //1(时间水印) 2 (图片水印)  3（文字水印)
         remarks: "", //（type 2时代表图片水印url type 3代表水印文字）
         template: 1, //1-9  (模板) 录制信令加了几个参数  已更新到pre小班
-        position: "right-top"
+        position: "right-top",
+        relay: false
       },
       appData: {
         appId: paramServer.getParam().appId,
@@ -83,10 +72,6 @@ class ClassRoom extends React.Component {
       users: [] // 房间内当前用户
     };
     this.videoList = [];
-    this.loadVideo = this.loadVideo.bind(this);
-    this.userLeave = this.userLeave.bind(this);
-    this.leaveLocalRoom = this.leaveLocalRoom.bind(this);
-    this.removeArrValue = this.removeArrValue.bind(this);
     this.online = this.online.bind(this);
     this.deviceIdChange = this.deviceIdChange.bind(this);
     this.setting = this.setting.bind(this);
@@ -94,6 +79,8 @@ class ClassRoom extends React.Component {
     // this.startVideo = this.startVideo.bind(this);
     this.desktop = this.desktop.bind(this);
     this.recording = this.recording.bind(this);
+    this.isIOS = isIOS();
+    this.exercrise = this.exercrise.bind(this);
   }
 
   componentDidMount() {
@@ -108,6 +95,20 @@ class ClassRoom extends React.Component {
       }
     );
 
+    imClient.on('CallReply',(data) => {
+      let {replyuserid , operation} = data
+      let {params} = this.state
+      if(params.userId === replyuserid && operation === "agree"){
+        this.online();
+      }
+    })
+
+    imClient.on('CallAuth',(data) => {
+      if(data.operation == 'close' && paramServer.getParam().role_type == 1){
+        this.downMic();
+      }
+    })
+
     window.addEventListener("beforeunload", this.leaveRoom);
   }
 
@@ -121,16 +122,17 @@ class ClassRoom extends React.Component {
 
   // 下麦操作，im消息过来后，退出重新加入房间
   downMic = () => {
-    const appData = paramServer.getParam();
     this.setState({
-      remoteStreams: []
+      remoteStreams: [],
+      localStream:null,
     });
     this.client.leaveRoom(() => {
       this.urtcInit(1);
     });
   };
 
-  urtcInit = role_type => {
+  //rtc初始化，role_type 为 1 推流， 为 2 推拉流
+   urtcInit = role_type => {
     const appData = paramServer.getParam();
     const token = sdk.generateToken(
       appData.appId,
@@ -139,6 +141,7 @@ class ClassRoom extends React.Component {
       appData.userId
     );
     const role = role_type === 0 ? "push" : role_type === 2 ? "push-and-pull" : "pull";
+    console.log('role>>>', role, role_type)
     window.p = this.client = new Client(appData.appId, token, {
       type: appData.room_type === 0 ? "rtc" : "live",
       role: role
@@ -146,9 +149,11 @@ class ClassRoom extends React.Component {
 
     this.client.on("stream-published", stream => {
       console.log("stream-published ", stream);
-      this.setState({
-        localStream: stream
-      });
+      if (stream.mediaType === 'camera') {
+        this.setState({
+          localStream: stream
+        });
+      }
     });
 
     this.client.on("stream-subscribed", stream => {
@@ -203,6 +208,14 @@ class ClassRoom extends React.Component {
       this.setState({ remoteStreams });
     });
 
+    this.client.on('screenshare-stopped', stream => {
+      this.client.unpublish(stream.sid, (s) => {
+        console.log('stop screen share ', s);
+      }, (e) => {
+        console.error('stop screen share ', e);
+      });
+    });
+
     this.client.joinRoom(appData.roomId, appData.userId, (users, streams) => {
       // this.client.setVideoProfile('1280*720');
       console.log("current users and streams in room ", users, streams);
@@ -221,80 +234,14 @@ class ClassRoom extends React.Component {
     });
   };
 
-  loadVideo(e) {
-    let appData = this.state.params;
-    console.log("loadVideo");
-    console.log(appData.room_type == 1);
-    console.log(this.videoList);
-    const _this = this;
-    let teacher = paramServer.getParam().teachList[0].UserId;
-    console.log(e);
-    if (e.userId == teacher && appData.room_type == 1) {
-      this.setState({
-        videoSrcObject: e.stream,
-        videoSrcObjectId: e.userId,
-        videoCurr: false
-      });
-      // this.videoSrcObject = e.stream;
-    } else {
-      let tmp = {};
-      tmp.stream = e.stream;
-      tmp.userId = e.userId;
-      tmp.curr = false;
-      tmp.time = new Date().getTime();
-      this.videoList.forEach(function(val, index) {
-        if (val.userId == e.userId) {
-          _this.videoList.splice(index, 1);
-        }
-      });
-      this.videoList.push(tmp);
-      this.updateRtcList(this.videoList);
-      // let arr = [...loadList]
-      this.setState({
-        loadList: this.videoList
-      });
-    }
-  }
-
-  userLeave(e) {
-    if (paramServer.getParam().teachList !== null) {
-      console.log(e);
-      let id = e.userId; //rtc userid
-      let teacher = paramServer.getParam().teachList[0].UserId;
-      let idList = this.videoList.map(e => {
-        return e.userId;
-      });
-      if (e.userId != teacher && idList.includes(id)) {
-        let newVideoList = this.videoList.filter(e => {
-          return e.userId != id;
-        });
-        this.videoList.length = 0;
-        this.videoList = newVideoList;
-        this.updateRtcList(newVideoList);
-        this.setState({
-          loadList: newVideoList
-        });
-      }
-    }
-  }
-
-  leaveLocalRoom(e) {
-    // loadList.splice(loadList.indexOf(paramServer.getParam().userId),1);
-    // this.updateRtcList(loadList)
-    // this.setState({
-    //     loadList: loadList,
-    // })
-  }
 
   /**
    * @description 学生上麦操作，推出房间，更改房间类型并重新加入
    */
   online = () => {
-    const appData = paramServer.getParam();
     this.setState({
       remoteStreams: []
     });
-    const user_id = appData.userId;
     this.client.leaveRoom(() => {
       this.urtcInit(2);
     });
@@ -304,17 +251,6 @@ class ClassRoom extends React.Component {
   updateRtcList(arr) {
     let o = paramServer.getParam();
     paramServer.setParam(Object.assign(o, { rtcList: arr }));
-  }
-
-  removeArrValue(arr, attr, val) {
-    let index = 0;
-    for (let i in arr) {
-      if (arr[i][attr] === val) {
-        index = i;
-        break;
-      }
-    }
-    arr.splice(index, 1);
   }
 
   deviceIdChange(e) {
@@ -367,13 +303,12 @@ class ClassRoom extends React.Component {
       }
     );
   }
+  
 
   recording = () => {
-    const appData = paramServer.getParam();
     const {recordParam } = this.state
-    console.error(recordParam);
 
-    if (this.state.recording == false) {
+    if (this.state.recording === false) {
       const bucket = "urtc-test";
       const region = "cn-bj";
       let obj = {
@@ -385,27 +320,33 @@ class ClassRoom extends React.Component {
         type,
         template,
         position,
+        relay
       } = recordParam;
       let { remarks } = recordParam;
       if (type === 'time'){
         remarks = '';
-      } 
-      console.error(obj);
-      this.client.startRecording(
-        {
-          waterMark: {
-            position,
-            type,
-            remarks,
-          },
-          mixStream: {
-            uid: uid,
-            template,
-            isAverage,
-          },
-          bucket: bucket,
-          region: region
+      }
+      let params = {
+        bucket: bucket,
+        region: region,
+        uid: uid,
+        mainViewType: 'camera',
+        waterMark: {
+          position,
+          type,
+          remarks,
         },
+        mixStream: {
+          template,
+          isAverage,
+        },
+      }
+      if (relay) {
+        params.relay = {
+          fragment: 60
+        }
+      }
+      this.client.startRecording(params,
         record => {
           console.log("start recording success ", record);
           const url = `http://${bucket}.${region}.ufileos.com/${record.FileName}.mp4`;
@@ -459,24 +400,41 @@ class ClassRoom extends React.Component {
       return [];
     }
   };
+  
   desktop() {
+    this.client.publish({
+      audio: false,
+      video: false,
+      screen: true 
+    }, e => {
+      console.log('screen share failed');
+    });
+    /*
     this.client.switchScreen(() => {
       console.log('screen success');
     }, (err) => {
       console.log('screen failed');
       // this.urtcInit(this.state.params.role_type);
     });
+    */
   }
 
   updataRecordParam = (type, e) => {
     console.log('updataRecordParam ', type, e)
     let obj = this.state.recordParam;
-    if (type == "type" || type == "isAverage" || type == "template" || type == "uid") {
-      obj[type] = e;
-    } else if (type == "template") {
-      obj[type] = e.target.value - 0;
-    } else {
-      obj[type] = e.target.value;
+    switch (type) {
+      case 'type':
+      case 'isAverage':
+      case 'template':
+      case 'uid':
+      case 'relay':
+        obj[type] = e;
+        break;
+      case 'template':
+        obj[type] = e.target.value - 0;
+        break;
+      default:
+        obj[type] = e.target.value;
     }
     this.setState({
       recordParam: obj
@@ -484,7 +442,6 @@ class ClassRoom extends React.Component {
   };
 
   checkParamStart = () => {
-    const { recordParam } = this.state;
     this.setState(
       {
         recordParamModalShow: false,
@@ -526,6 +483,9 @@ class ClassRoom extends React.Component {
     return arr
   }
 
+  exercrise(){
+    
+  }
 
   render() {
     const {
@@ -537,7 +497,6 @@ class ClassRoom extends React.Component {
       recordParam,
     } = this.state;
     const subTeacher = this.filterSubTeacher();
-    console.log(localStream, remoteStreams);
     const param = paramServer.getParam();
     const role = param.role_type === 0 ? "push" : param.role_type === 2 ? "push-and-pull" : "pull";
     return (
@@ -568,6 +527,7 @@ class ClassRoom extends React.Component {
           <Icon className="stack" type="stack" />
           屏幕共享
         </div>
+        <Exercrise roomId={this.state} />
         <Nav client={this.client} role={role} />
         <div className="classroom_layout clearfix">
           {/* <Sidebar></Sidebar> */}
@@ -604,6 +564,7 @@ class ClassRoom extends React.Component {
                       muted={true}
                       playing
                       playsinline
+                      controls={this.isIOS}
                     />
                   ) : (
                     //大班课验证身份是否为老师显示
@@ -616,6 +577,7 @@ class ClassRoom extends React.Component {
                       muted={false}
                       playing
                       playsinline
+                      controls={this.isIOS}
                     />
                   )}
                 </div>
@@ -674,7 +636,7 @@ class ClassRoom extends React.Component {
           title="录制结束"
         >
           <div className="form-row device-id">
-            <a href={this.state.recordUrl} target="_blank">
+            <a href={this.state.recordUrl} target="_blank" rel="noopener noreferrer">
               回看地址
             </a>
             {/* 录制结束，请到本地服务录制目录查看 */}
@@ -781,6 +743,27 @@ class ClassRoom extends React.Component {
               </div>
             </div>
           )}
+          <div className="form-row device-id">
+            <span style={{ display: "inline-block", width: "80px" }}>
+              是否转推
+            </span>
+
+            <div style={{ display: "inline-block" }}>
+              <Radio.Group
+                onChange={this.updataRecordParam.bind(this, "relay")}
+                size="md"
+                value={recordParam.relay}
+                disabled={false}
+              >
+                <Radio key={1} value={true}>
+                  是
+                </Radio>
+                <Radio key={2} value={false}>
+                  否
+                </Radio>
+              </Radio.Group>
+            </div>
+          </div>
         </Modal>
       </div>
     );

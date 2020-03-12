@@ -12,11 +12,11 @@
         position: absolute;
         box-sizing: border-box;
         bottom: 16px;
-        left: 4px;
+        right: 4px;
         height: 16px;
         line-height: 12px;
         padding-left: 1px;
-        width: 90px;
+        width: 76px;
         border-radius: 10px;
         color: black;
         background-color: #fff;
@@ -41,7 +41,7 @@
          display: inline-block;
          line-height: 18px;
          font-size: 12px;
-         margin: 0 5px;
+         margin-left: 2px;
          overflow: hidden; //超出的文本隐藏
          text-overflow: ellipsis; //溢出用省略号显示
          white-space: nowrap;

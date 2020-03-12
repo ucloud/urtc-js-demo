@@ -1,3 +1,4 @@
+/* eslint-disable */
 const getOS = function() {
     const e = window.navigator.userAgent;
     const t = window.navigator.platform;

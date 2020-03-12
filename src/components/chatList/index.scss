@@ -1,0 +1,40 @@
+.chatList{
+   position: absolute;
+   top: 61px;
+   bottom: 0;
+   right: 0;
+   left: 0;
+   .top31{
+       top: 31px;
+   }
+   .content{
+        height: calc(100% - 33px);
+        background-color: ivory;
+   }
+   .msgWrapper{
+    text-align: left;
+    position: absolute;
+    bottom: 0;left: 0;right: 0;
+    display: -webkit-flex;
+    display: flex;
+    .input{
+         -webkit-flex: 1;
+         flex:1;
+        .sendBtn {
+            cursor: pointer;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+        }
+    }
+    .disChat {
+        -webkit-flex: none;
+        flex: none;
+        width: 34px;
+        height: 34px;
+        height: 100%;
+        display: inline-block;
+    }
+}
+}

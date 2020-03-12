@@ -24,7 +24,7 @@ export default class CustomDetail extends React.Component {
   }
 
   componentDidMount(){
-    console.log('>>>><<<<>>>><<<<')
+    // console.log('>>>><<<<>>>><<<<')
   }
 
   close = () => {
@@ -37,7 +37,6 @@ export default class CustomDetail extends React.Component {
 
   render() {
     const { detail, show } = this.props;
-    console.log(detail)
     return (
       // <CSSTransitionGroup
       //   transitionName="custom_detail"

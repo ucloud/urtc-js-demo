@@ -11,29 +11,13 @@ import {
   Select
 } from "@ucloud-fe/react-components";
 import { randNum } from "../../common/util/index";
-import axios from "axios";
-import { getText } from "../../common/dictMap/index";
 import paramServer from "../../common/js/paramServer";
-
+import {createClient, imClient} from "../../common/serve/imServe.js";
+import {formLable} from '../../common/config/project'
 const { Item } = Form;
 const verticalLayout = {};
-const formLable = {
-  roomId: "房间号",
-  name: "名字",
-  character: [
-    { key: "1", value: "学生" },
-    { key: "2", value: "老师" },
-    // { key: '2', value: '监查', },
-  ],
-  submit: "加入",
-  crouseType: [
-    { key: '0', value: '小班课', },
-    { key: "1", value: "大班课" },
-  ]
-};
-let appData = {};
-// paramServer.setParam( appData);
 
+let appData = {};
 class Login extends React.Component {
   constructor(props) {
     super(props);
@@ -41,7 +25,7 @@ class Login extends React.Component {
       loading: false,
       size: "md",
       disabled: false,
-      role_type: formLable.character[1].key,
+      role_type: formLable.character[0].key,
       roomId: "",
       name: "",
       room_type: 0,
@@ -66,7 +50,7 @@ class Login extends React.Component {
 
   changRoomId = e => {
     this.setState({
-      roomId: e.target.value
+      roomId: e.target.value 
     });
   };
 
@@ -74,8 +58,6 @@ class Login extends React.Component {
     appData = {
       appId: "URtc-h4r1txxy",
       userId: randNum(8),
-      // userId: '333',
-
       mediaType: "1", //桌面和摄像头采集类型
       appkey: "9129304dbf8c5c4bf68d70824462409f"
     };
@@ -85,39 +67,54 @@ class Login extends React.Component {
     });
     let param = {
       room_type: room_type - 0,
-      role_type: role_type - 0,
+      role_type: room_type == 0 ? 2 : role_type - 0, 
       roomId,
       name,
       ...appData
     };
-    paramServer.setParam();
-    paramServer.setParam(param);
-    axios({
-      method: "post",
-      url: `https://${getText("im")}/JoinRoom`,
-      data: {
-        UserId: appData.userId,
-        RoomId: roomId,
-        Uuid: "",
-        AppId: paramServer.getParam().appId,
-        UserInfo: { userName: name, userType: role_type },
-        UserType: role_type == 2 ? "admin" : "default"
-      }
-    }).then(data => {
-      paramServer.setParam();
-      paramServer.setParam(Object.assign(param, { ...data.data.Msg }));
-      this.setState({
-        loading: false
-      });
-      this.props.history.push({ pathname: `/class` });
-    });
+    this.joinIM(param);
   };
 
+  //加入im房间
+  joinIM(param){
+    createClient(appData.appId)
+    let type = 'admin'
+    if(param.room_type == 1){
+      //大班课
+      type = param.role_type == 2 ? 'admin' : 'default'
+    }
+    imClient.joinRoom(
+      param.roomId,
+      param.userId,
+      type,
+      param.name,
+      (data) => { 
+        let writeInfo = imClient.getWhiteboard()
+
+        console.log('join success >>> ', data, writeInfo)
+        paramServer.setParam(
+          Object.assign(
+            {
+              adminList: imClient.getDefaultUsers(),
+              roomInfo:data.roomInfo,
+              Token: writeInfo.token,
+              Uuid: writeInfo.uuid,
+            },
+            param,
+          )
+        );
+        this.setState({
+          loading: false
+        });
+        this.props.history.push({ pathname: `/class` });
+      }
+    )
+  }
   changeRoomtype = e => {
     this.setState({
       room_type: e
     });
-    if(e == 0){
+    if(e === 0){
       this.setState({
         userTypeStyle: 'none',
         role_type:'2'
@@ -146,6 +143,7 @@ class Login extends React.Component {
             <a
               href="https://www.ucloud.cn/"
               target="_blank"
+              rel="noopener noreferrer"
               onClick={this.goUcloud}
             >
               <p className="bg_img_content"></p>
@@ -190,8 +188,9 @@ class Login extends React.Component {
                         onChange={this.changName}
                       />
                     </Item>
-
-                    <Item label="">
+                        
+                    {room_type == 1 ?
+                      <Item label="">
                       <Radio.Group
                         onChange={this.changeCharacter}
                         value={role_type}
@@ -203,7 +202,9 @@ class Login extends React.Component {
                           </Radio>
                         ))}
                       </Radio.Group>
-                    </Item>
+                    </Item> : null
+                    }
+                    
                   </Form>
                   <Button className="submit_btn" onClick={this.joinRoom}>
                     <span className="text">{formLable.submit}</span>

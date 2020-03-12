@@ -17,11 +17,12 @@ let dict = {
   }
 };
 
+
 function getText(key) {
-  if (process.env.REACT_APP_ENV == "prod") {
-    // 线上正是环境
+  if (process.env.REACT_APP_ENV === "prod") {
+    // 线上prod环境
     return dict[key].prod;
-  } else if (process.env.REACT_APP_ENV == "pre") {
+  } else if (process.env.REACT_APP_ENV === "pre") {
     // 线上pre环境
     return dict[key].pre;
   }

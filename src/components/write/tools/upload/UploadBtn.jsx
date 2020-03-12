@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as React from "react";
 import { Popover } from '@ucloud-fe/react-components';
 import * as OSS from "ali-oss";
@@ -81,7 +82,7 @@ export default class UploadBtn extends React.Component {
                 customRequest={this.uploadStatic}>
                 <div className="popover-box-cell">
                     <div className="popover-box-cell-img-box">
-                        <img src={doc_to_image} style={{height: '28px'}}/>
+                        <img alt={null} src={doc_to_image} style={{height: '28px'}}/>
                     </div>
                     <div className="popover-box-cell-title">
                         资料转图片
@@ -89,7 +90,6 @@ export default class UploadBtn extends React.Component {
                     <div className="popover-box-cell-script">支持 pdf、ppt、pptx、word</div>
                 </div>
             </Upload>
-            {/*
             <Upload
                 style={{display:'inline-block'}}
                 disabled={!this.props.roomToken}
@@ -106,7 +106,6 @@ export default class UploadBtn extends React.Component {
                     <div className="popover-box-cell-script">支持 pptx</div>
                 </div>
             </Upload>
-            */}
             <Upload
                 style={{display:'inline-block'}}
                 accept={"image/*"}
@@ -114,7 +113,7 @@ export default class UploadBtn extends React.Component {
                 customRequest={this.uploadImage}>
                 <div className="popover-box-cell">
                     <div className="popover-box-cell-img-box">
-                        <img src={image} style={{height: '28px'}}/>
+                        <img src={image} style={{height: '28px'}} alt={null}/>
                     </div>
                     <div className="popover-box-cell-title">
                         上传图片

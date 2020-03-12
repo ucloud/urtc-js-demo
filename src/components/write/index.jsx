@@ -1,5 +1,4 @@
 import React from 'react';
-import { Loading } from '@ucloud-fe/react-components';
 import classnames from 'unique-classnames';
 import {
     WhiteWebSdk,

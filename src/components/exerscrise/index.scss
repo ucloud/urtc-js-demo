@@ -1,0 +1,96 @@
+.exercrise{
+    position: absolute;
+    right:360px;
+    font-size: 12px;
+    top:15px;
+    color:#fff;
+    z-index: 111;
+    cursor: pointer;
+}
+.exercise_list-title{
+    margin: 10px 0 0 10px;
+}
+.create-exercise{
+    margin: 6px 10px 0 0;
+}
+.create-exam{
+    padding: 10px;
+}
+.create-exam button{
+    height: 20px;
+    padding: 0 4px;
+    margin-right: 8px;
+}
+.exam-options .option-item{
+    display: block;
+    margin-bottom: 8px;
+}
+.exam-title{
+    padding: 10px;
+}
+.exam-content{
+    padding:10px 4px 10px;
+}
+.exam-options{
+    padding:10px 32px;
+}
+.content-title{
+    font-size: 14px;
+}
+.exam-data{
+    padding:0 20px 20px;
+}
+.add-question{
+    margin-left: 50px;
+}
+.exam-des{
+    padding:10px;
+}
+.option-item .option-radio{
+    margin-right: 3px;
+}
+.exam-link{
+    color:#4074e1;
+    cursor: pointer;
+}
+.exam-des .exam_des-textarea{
+    display: inline-block;
+    vertical-align:text-top;
+}
+.detail-title{
+    font-size: 18px;
+    color: #555;
+    text-align: center;
+    padding: 10px;
+}
+.detail-des{
+    font-size: 14px;
+    color: #777;
+    text-align: center;
+    padding: 20px 50px;
+    line-height: 20px;
+}
+.detail-list{
+    padding: 10px 20px 10px 120px;
+    line-height: 22px;
+}
+.detail_ques-title{
+    font-size: 14px;
+}
+.detail-answer{
+    margin-left: 10px;
+    color:#dc4d53;
+}
+.detail-item{
+    font-size: 14px;
+    padding-left: 50px;
+}
+.detail-wrapper{
+    padding-bottom: 20px;
+}
+.delete-exam{
+    margin-left: 2px;
+}
+.getStat-exam{
+    margin-left: 2px;
+}

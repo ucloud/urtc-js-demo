@@ -1,7 +1,8 @@
+/* eslint-disable */
 import React from "react";
-import { Button, Tooltip, Icon, Badge } from "@ucloud-fe/react-components";
+import { Button, Icon } from "@ucloud-fe/react-components";
 import paramServer from "../../common/js/paramServer";
-import { AuthCall, sendApplyCall, ReplyCall } from "../../common/api/chat";
+import { imClient } from "../../common/serve/imServe.js";
 import "./index.scss";
 
 let penging = false;
@@ -13,7 +14,9 @@ class CallList extends React.Component {
       loading: false,
       param: null,
       modalHide: false,
-      opacity: 1
+      opacity: 1,
+      adminList: [],
+      userList: []
     };
   }
 
@@ -21,9 +24,10 @@ class CallList extends React.Component {
     let param = paramServer.getParam();
     if (param.roomId) {
       this.setState({
-        param
+        param,
       });
     }
+    
     let num = 0;
     this.timer = setInterval(
       function() {
@@ -45,49 +49,40 @@ class CallList extends React.Component {
   }
 
   openCall = e => {
-    if (penging) {
-    } else {
+    if (!penging) {
       penging = true;
-    }
-    AuthCall(true).then(data => {
-      penging = false;
-    });
+    } 
   };
 
   closeCall = e => {
-    if (penging) {
-    } else {
+    if (!penging) {
       penging = true;
     }
-    AuthCall(false).then(data => {});
   };
-
-  checkTeach() {
-    const param = paramServer.getParam();
-    if (param == null || !param.hasOwnProperty("teachList")) {
-      return false;
-    }
-    let arr = param.teachList.map(e => {
-      return e.UserId;
-    });
-    let id = param.UserId;
-
-    return arr.includes(id);
-  }
-
   replyCall = type => {
-    ReplyCall(this.props.data.UserId, type).then(data => {
-      this.setState({
-        modalHide: true
-      });
-    });
+    let res = type ? 'agree' : 'refuse'
+    imClient.replyCall(
+      this.props.data.UserId,
+      res,
+      (data) => {
+        console.log(data,)
+        this.setState({
+          modalHide: true
+        });
+      }
+    )
+
   };
 
   render() {
-    const param = paramServer.getParam();
-    const { modalHide } = this.state;
-    let data = this.props.data;
-    let isTeach = this.checkTeach();
+    // const param = paramServer.getParam();
+    const {
+      modalHide
+    } = this.state
+    const {
+      isAdmin,
+      data
+    } = this.props;
     return (
       <div className="callList_main">
         <div className="callList_content fl">
@@ -102,14 +97,14 @@ class CallList extends React.Component {
             <span
               style={{ opacity: this.state.opacity }}
               className={
-                this.props.isRtc ? "callList_status blue" : "callList_status"
+                this.props.inRtc ? "callList_status blue" : "callList_status"
               }
             ></span>
           </div>
         </div>
 
         {/* 一次性显示，是否为老师的权限，是否在线列表 */}
-        {this.props.isRtc ? null : isTeach ? (
+        {(!this.props.inRtc && !modalHide && isAdmin === 2 ) ? (
           <div className="fr btn_wrapper">
             <Button
               onClick={this.replyCall.bind(this, true)}

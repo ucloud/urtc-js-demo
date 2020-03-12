@@ -12,6 +12,7 @@ module.exports = override(
     addWebpackAlias({
         "@/sdk": path.resolve(__dirname, "sdk"),
         "@/src": path.resolve(__dirname, "src"),
+        "@/imsdk": path.resolve(__dirname, "imsdk"),
     }),
     addWebpackPlugin(new webpack.DefinePlugin({
         'process.env.IS_PRE': JSON.stringify(process.env.env === 'pre')
