@@ -4,8 +4,12 @@
 
 启动
 
+```js
+npm run start
 ```
-    npm run start or yarn start 
+或者    
+```js
+yarn start 
 ```
 
 ## 简单步骤
