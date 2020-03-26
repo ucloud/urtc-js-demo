@@ -24,7 +24,7 @@ const client = new Client(appId, appKey); // 默认为直播模式（大班课�
 
 ### 2. 监听流事件
 
-```
+```js
 client.on('stream-published', (stream) => {
     htmlVideoElement.srcObject = stream.mediaStream;
 }); // 监听本地流发布成功事件，此事件在当前用户执行 publish 后，与服务器经多次协商，建立好连接后，会触发此事件
@@ -41,7 +41,7 @@ client.on('stream-added', (stream) => {
 
 ### 3. 加入一个房间，然后发布本地流并订阅远端流
 
-```
+```js
 client.joinRoom(roomId, userId, () => {
     client.publish();
 }); // 在 joinRoom 的 onSuccess 回调函数中执行 publish 发布本地流
@@ -49,13 +49,13 @@ client.joinRoom(roomId, userId, () => {
 
 ### 4. 取消发布本地流或取消订阅远端流
 
-```
+```js
 client.unpublish();
 client.unsubscibe(streamId);
 ```
 
 ### 5. 退出房间
 
-```
+```js
 client.leaveRoom();
 ```
