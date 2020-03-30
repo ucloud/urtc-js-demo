@@ -1,8 +1,8 @@
 # URTC web demo2
 
-新版 [urtc-sdk-web](https://github.com/ucloud/urtc-sdk-web) 使用示例
+新版 [urtc-sdk-web](https://github.com/ucloud/urtc-sdk-web) 使用示例   
 
-启动
+在本地demo目录下，启动  
 
 ```js
 npm run start
