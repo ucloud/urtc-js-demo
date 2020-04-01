@@ -1,0 +1,21 @@
+.push-url-container {
+  display: inline-flex;
+  flex-direction: column;
+
+  .push-url {
+    margin-bottom: 8px;
+    line-height: 18px;
+    word-break: break-all;
+  }
+
+  .remove-btn {
+    margin: 8px;
+    cursor: pointer;
+  }
+
+  .add-btn {
+    margin: 8px;
+    cursor: pointer;
+    align-self: flex-start;
+  }
+}

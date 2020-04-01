@@ -87,4 +87,10 @@
 .localvideo_main{
     height: 120px;
     background: #abacad;
+
+    &.mobile {
+        video {
+            transform: rotateY(180deg);
+        }
+    }
 }

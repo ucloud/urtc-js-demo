@@ -31,6 +31,14 @@ class Login extends React.Component {
       room_type: 0,
       userTypeStyle:'none'
     };
+
+    if (window.location.protocol !== 'https:') {
+      const { location } = window;
+      if (!['localhost', '127.0.0.1'].includes(location.hostname)) {
+        alert('http 的站点不支持 WebRTC，将跳转到 https 的站点');
+        window.open(`https://${location.host}${location.pathname}${location.search}`, "_self");
+      }
+    }
   }
 
   componentDidMount() {}
@@ -89,24 +97,25 @@ class Login extends React.Component {
       type,
       param.name,
       (data) => { 
-        let writeInfo = imClient.getWhiteboard()
-
-        console.log('join success >>> ', data, writeInfo)
-        paramServer.setParam(
-          Object.assign(
-            {
-              adminList: imClient.getDefaultUsers(),
-              roomInfo:data.roomInfo,
-              Token: writeInfo.token,
-              Uuid: writeInfo.uuid,
-            },
-            param,
-          )
-        );
-        this.setState({
-          loading: false
-        });
-        this.props.history.push({ pathname: `/class` });
+        imClient.createWhite(whiteData => {
+          let { uuid, token } = whiteData;
+          paramServer.setParam(
+            Object.assign(
+              {
+                defaultList: data.defaultUsers,
+                adminList: data.adminUsers,
+                roomInfo: data.roomInfo,
+                Token: token,
+                Uuid: uuid
+              },
+              param
+            )
+          );
+          this.setState({
+            loading: false
+          });
+          this.props.history.push({ pathname: `/class` });
+        })
       }
     )
   }

@@ -136,7 +136,7 @@ class Nav extends React.Component {
         }
         return (
             <span style={{marginLeft: '10px'}}>网络：
-                <span className="icon icon__signal" style={{fontSize: '16px', color: color}}></span>
+                <span title={tip} className="icon icon__signal" style={{fontSize: '16px', color: color}}></span>
             </span>
         );
     }

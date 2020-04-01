@@ -8,8 +8,11 @@ import {
   Radio,
   Input,
 } from "@ucloud-fe/react-components";
+import mobile from 'is-mobile';
 import publishedSDK from "urtc-sdk";
+import unpublishedSDK from "@/sdk";
 // component组件
+import MixStream from "../../components/mixStream";
 import Nav from "../../components/nav/index";
 import Write from "../../components/write/index";
 import Exercrise from "../../components/exerscrise/index";
@@ -23,7 +26,6 @@ import { isIOS } from "../../common/browser";
 const { Option, Size } = Select;
 
 let sdk = publishedSDK;
-
 console.log('sdk version ', sdk.version);
 
 const { Client, Logger } = sdk;
@@ -80,7 +82,20 @@ class ClassRoom extends React.Component {
     this.desktop = this.desktop.bind(this);
     this.recording = this.recording.bind(this);
     this.isIOS = isIOS();
+    this.isMobile = mobile({ tablet: true });
     this.exercrise = this.exercrise.bind(this);
+
+    if (!sdk.isSupportWebRTC()) {
+      if (mobile({tablet: true})) {
+        if (isIOS()) {
+          alert('当前浏览器不完全支持 WebRTC，为使用完整的功能，请使用最新的 Safari 浏览器访问站点');
+        } else {
+          alert('当前浏览器不完全支持 WebRTC，为使用完整的功能，请使用最新的 Chrome/Firefox 等浏览器访问站点');
+        }
+      } else {
+        alert('当前浏览器不完全支持 WebRTC，为使用完整的功能，请使用最新的 Chrome/Firefox/Safari 等浏览器访问站点');
+      }
+    }
   }
 
   componentDidMount() {
@@ -216,18 +231,36 @@ class ClassRoom extends React.Component {
       });
     });
 
+    this.client.on('stream-reconnected', (oldStream, newStream) => {
+      if (oldStream.type === 'publish') {
+        this.setState({ localStream: newStream });
+      } else {
+        const { remoteStreams } = this.state;
+        const idx = remoteStreams.findIndex(item => item.sid === oldStream.sid);
+        if (idx) {
+          remoteStreams.splice(idx, 1, newStream);
+        }
+        this.setState({ remoteStreams });
+      }
+    });
+
     this.client.joinRoom(appData.roomId, appData.userId, (users, streams) => {
       // this.client.setVideoProfile('1280*720');
       console.log("current users and streams in room ", users, streams);
 
       if (role === 'pull') return;
+      let opts = {
+        audio: true,
+        video: true,
+        screen: false
+      }
+      if (this.isMobile) {
+        opts.facingMode = 'user';
+      }
       this.client.publish(
-        {
-          audio: true,
-          video: true,
-          screen: false
-        },
+        opts,
         e => {
+          alert(`发布失败 ${e}`);
           console.log("publish failure ", e);
         }
       );
@@ -408,6 +441,7 @@ class ClassRoom extends React.Component {
       screen: true 
     }, e => {
       console.log('screen share failed');
+      alert(`屏幕分享发布失败 ${e}`);
     });
     /*
     this.client.switchScreen(() => {
@@ -487,6 +521,13 @@ class ClassRoom extends React.Component {
     
   }
 
+  renderDevice(device) {
+    if (device.label) {
+      return <span>{device.label}</span>;
+    }
+    return <span title={device.deviceId}>{`${device.deviceId.substr(0, 10)}...`}</span>;
+  }
+
   render() {
     const {
       params,
@@ -499,6 +540,7 @@ class ClassRoom extends React.Component {
     const subTeacher = this.filterSubTeacher();
     const param = paramServer.getParam();
     const role = param.role_type === 0 ? "push" : param.role_type === 2 ? "push-and-pull" : "pull";
+    const canRelay = !!(this.client && this.client.startMix);
     return (
       <div className="classroom_main">
         {/* <div className="start-video fr" onClick={this.startVideo}>
@@ -507,6 +549,10 @@ class ClassRoom extends React.Component {
         </div> */}
 
         {/* 录制 */}
+        {
+          canRelay
+            ? <MixStream client={this.client}></MixStream>
+            : (
         <div
           className="recording-video fr "
           onClick={() => {
@@ -519,6 +565,8 @@ class ClassRoom extends React.Component {
           />
           {this.state.recordText}
         </div>
+            )
+        }
         <div className="act-top fr" onClick={this.setting}>
           <Icon type="cog" />
           切换摄像头
@@ -551,7 +599,7 @@ class ClassRoom extends React.Component {
             <Col span={2}>
               {/* <Localvideo></Localvideo> */}
               {params && (
-                <div className="localvideo_main">
+                <div className={`localvideo_main ${this.isMobile && this.isIOS?'mobile':''}`}>
                   {params.room_type === 0 ||
                     (params.room_type === 1/* && params.role_type === 2 移动端未判断用户角色，为三端统一，暂时注释掉*/) ? (
                     //小班课显示本地
@@ -559,12 +607,10 @@ class ClassRoom extends React.Component {
                       key={localStream && localStream.sid}
                       width="256px"
                       height="100%"
-                      volume={null}
                       url={localStream && localStream.mediaStream}
                       muted={true}
                       playing
                       playsinline
-                      controls={this.isIOS}
                     />
                   ) : (
                     //大班课验证身份是否为老师显示
@@ -612,7 +658,7 @@ class ClassRoom extends React.Component {
             >
               {this.state.videoIdArr.map(i => (
                 <Option value={i.deviceId} key={i.deviceId}>
-                  <span>{i.label}</span>
+                  { this.renderDevice(i) }
                 </Option>
               ))}
             </Select>

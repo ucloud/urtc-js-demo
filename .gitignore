@@ -2,13 +2,14 @@
 
 # dependencies
 /node_modules
+/Delivery
 /.history
 /.pnp
 .pnp.js
-package-lcok.js
+package-lock.json
 # testing
 /coverage
-
+/urtc-sdk-web
 # production
 /build
 

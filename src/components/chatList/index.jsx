@@ -45,19 +45,21 @@ class ChatList extends React.Component {
     let param = paramServer.getParam();
     let config = this.wsConfig();
     console.log(param, config);
-
-    // 绑定消息处理方法
-    imClient.getHistoryChat(0,20,0, data => {
-      console.log(data)
-      let arr = data.filter(e => {
-        return e !== undefined;
-      });
-      this.setState({
-        loading: false,
-        chatList: arr,
-        scrolling_pos: arr.length - 1
-      });
+    this.setState({
+          loading: false,
     });
+    // 绑定消息处理方法
+    // imClient.getHistoryChat(0,20,0, data => {
+    //   console.log(data)
+    //   let arr = data.filter(e => {
+    //     return e !== undefined;
+    //   });
+    //   this.setState({
+    //     loading: false,
+    //     chatList: arr,
+    //     scrolling_pos: arr.length - 1
+    //   });
+    // });
     // 接收消息
     this.imBindEvent("Msg");
     //接收自定义消息
@@ -86,15 +88,23 @@ class ChatList extends React.Component {
 
   // 封装ws接受消息处理的方法
   wsConfig = () => {
+    let tempChatList = [];
+    let flag = false;
     return {
       Msg: data => {
         num += 1
-        console.log('send msg >>>>>>:',data,num)
-        let arr = [...this.state.chatList, data];
-        this.setState({
-          chatList: arr,
-          scrolling_pos: arr.length - 1
-        });
+
+        let { chatList } = this.state;
+        let arr = chatList;
+        arr.push(data);
+        console.log("chatList>>>", data, tempChatList, arr, num);
+        setTimeout(() => {
+          this.setState({
+            chatList: arr,
+            scrolling_pos: arr.length - 1
+          });
+        }, 100);
+     
       },
       Users: data => {
         this.setState({
