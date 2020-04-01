@@ -10,7 +10,6 @@ import {
 } from "@ucloud-fe/react-components";
 import mobile from 'is-mobile';
 import publishedSDK from "urtc-sdk";
-import unpublishedSDK from "@/sdk";
 // component组件
 import MixStream from "../../components/mixStream";
 import Nav from "../../components/nav/index";

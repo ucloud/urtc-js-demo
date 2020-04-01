@@ -1,5 +1,4 @@
 import publishedSDK from "urtc-im";
-import unpublishedSDK from "@/imsdk";
 // import unpublishedSDK from "../../../../im-test-demo/src/im-sdk-web/lib/index";
 
 
