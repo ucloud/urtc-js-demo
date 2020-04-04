@@ -1,6 +1,6 @@
 # URTC Web 教育demo
 
-本demo 运行网址：https://demo.urtc.com.cn/
+demo网址：https://demo.urtc.com.cn/
 
 更多内容，参考[URTC Web集成指南](https://docs.ucloud.cn/urtc/sdk/VideoStart)。
 
