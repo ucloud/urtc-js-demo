@@ -1,20 +1,7 @@
 # URTC Web 教育demo
 
-### 使用`npm`引入SDK
+本demo 运行网址：https://demo.urtc.com.cn/
 
-将 sdk 使用 ES6 语法作为模块引入。使用该方法需要先安装 `npm`，详见 [npm快速入门](https://www.npmjs.cn/getting-started/installing-node/)。
-
-1）使用`npm`或 [`Yarn`](https://yarnpkg.com/) 集成 WEB SDK:
-```
-npm install --save urtc-sdk
-或    
-yarn add urtc-sdk
-```
-2）项目中引入SDK并创建 client
-
-```
-import { Client } from 'urtc-sdk';
-```
 更多内容，参考[URTC Web集成指南](https://docs.ucloud.cn/urtc/sdk/VideoStart)。
 
 ## URTC Web 简易demo
