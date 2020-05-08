@@ -29,7 +29,7 @@ yarn start
 下载[urtc-sdk-web](https://git.ucloudadmin.com/urtc/sdk/urtc-sdk-web) ，并进入使用示例，选择angular、react、vue、纯JS demo任一种源码运行。
 
 
-### 直接集成SDK的简单步骤
+## 直接集成SDK的简单步骤
 
 #### 1. 创建一个 URTC Client
 
