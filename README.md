@@ -5,9 +5,9 @@
 ## 步骤1：使用npm引入SDK
 
 ```
-npm install --save urtc-sdk
+npm install
 或    
-yarn add urtc-sdk
+yarn
 
 ```
 
