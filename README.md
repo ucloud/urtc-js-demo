@@ -1,6 +1,25 @@
 # URTC Web 教育demo
 
-demo网址：https://demo.urtc.com.cn/
+此demo网址：https://demo.urtc.com.cn/
+
+## 使用npm引入SDK
+
+```
+
+npm install --save urtc-sdk
+或    
+yarn add urtc-sdk
+
+```
+
+## 启动
+
+```
+    npm run start 
+    或
+    yarn start 
+    
+```
 
 更多内容，参考[URTC Web集成指南](https://docs.ucloud.cn/urtc/sdk/VideoStart)。
 
@@ -10,11 +29,6 @@ demo网址：https://demo.urtc.com.cn/
 
 [urtc-sdk-web](https://git.ucloudadmin.com/urtc/sdk/urtc-sdk-web) 使用示例
 
-启动
-
-```
-    npm run start or yarn start 
-```
 
 ### 简单步骤
 
