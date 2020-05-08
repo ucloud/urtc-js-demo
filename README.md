@@ -2,22 +2,21 @@
 
 此demo网址：https://demo.urtc.com.cn/
 
-## 使用npm引入SDK
+## 步骤1：使用npm引入SDK
 
 ```
-
 npm install --save urtc-sdk
 或    
 yarn add urtc-sdk
 
 ```
 
-## 启动
+## 步骤2：启动
 
 ```
-    npm run start 
-    或
-    yarn start 
+npm run start 
+或
+yarn start 
     
 ```
 
