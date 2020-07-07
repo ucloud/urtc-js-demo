@@ -24,7 +24,14 @@ yarn start
 ### 1. 获取 token
  [ucloud 控制台获取](https://console.ucloud.cn/urtc/manage)， 得到 appId 和 appKey。然后修改 config 下的 index.js 文件 
 ### 2. 创建一个 URTC Client
+```
+import { Client } from 'sdk';
+const client = new Client(appId, appKey); // 默认为直播模式（大班课），若为连麦模式（小班课）时，需要传入第三个参数 { type: 'rtc' }，更多配置见 sdk API 说明
 
+```
+### 3. 监听流事件
+
+client.on('stream-published', (stream) => {
     htmlVideoElement.srcObject = stream.mediaStream;
 }); // 监听本地流发布成功事件，此事件在当前用户执行 publish 后，与服务器经多次协商，建立好连接后，会触发此事件
 
@@ -38,11 +45,7 @@ client.on('stream-added', (stream) => {
 
 ```
 
-<<<<<<< HEAD
 ### 4. 加入一个房间，然后发布本地流并订阅远端流
-=======
-#### 3. 加入一个房间，然后发布本地流并订阅远端流
->>>>>>> 0f6857940bac035139445c801c13293b8b125099
 
 ```
 client.joinRoom(roomId, userId, () => {
@@ -50,11 +53,7 @@ client.joinRoom(roomId, userId, () => {
 }); // 在 joinRoom 的 onSuccess 回调函数中执行 publish 发布本地流
 ```
 
-<<<<<<< HEAD
 ### 5. 取消发布本地流或取消订阅远端流
-=======
-#### 4. 取消发布本地流或取消订阅远端流
->>>>>>> 0f6857940bac035139445c801c13293b8b125099
 
 ```
 client.unpublish();
