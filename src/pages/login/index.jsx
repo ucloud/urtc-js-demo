@@ -8,12 +8,13 @@ import {
   Radio,
   Button,
   Loading,
-  Select
+  Select,
 } from "@ucloud-fe/react-components";
 import { randNum } from "../../common/util/index";
 import paramServer from "../../common/js/paramServer";
-import {createClient, imClient} from "../../common/serve/imServe.js";
-import {formLable} from '../../common/config/project'
+import { createClient, imClient } from "../../common/serve/imServe.js";
+import { formLable } from "../../common/config/project";
+import config from "../../../config";
 const { Item } = Form;
 const verticalLayout = {};
 
@@ -29,109 +30,107 @@ class Login extends React.Component {
       roomId: "",
       name: "",
       room_type: 0,
-      userTypeStyle:'none'
+      userTypeStyle: "none",
     };
 
-    if (window.location.protocol !== 'https:') {
+    if (window.location.protocol !== "https:") {
       const { location } = window;
-      if (!['localhost', '127.0.0.1'].includes(location.hostname)) {
-        alert('http 的站点不支持 WebRTC，将跳转到 https 的站点');
-        window.open(`https://${location.host}${location.pathname}${location.search}`, "_self");
+      if (!["localhost", "127.0.0.1"].includes(location.hostname)) {
+        alert("http 的站点不支持 WebRTC，将跳转到 https 的站点");
+        window.open(
+          `https://${location.host}${location.pathname}${location.search}`,
+          "_self"
+        );
       }
     }
   }
 
   componentDidMount() {}
 
-  changeCharacter = e => {
+  changeCharacter = (e) => {
     this.setState({
-      role_type: e
+      role_type: e,
     });
   };
   // 加入房间
 
-  changName = e => {
+  changName = (e) => {
     this.setState({
-      name: e.target.value
+      name: e.target.value,
     });
   };
 
-  changRoomId = e => {
+  changRoomId = (e) => {
     this.setState({
-      roomId: e.target.value 
+      roomId: e.target.value,
     });
   };
 
   joinRoom = () => {
+    console.log(config.appId, config.appkey);
     appData = {
-      appId: "URtc-h4r1txxy",
+      appId: config.appId,
       userId: randNum(8),
       mediaType: "1", //桌面和摄像头采集类型
-      appkey: "9129304dbf8c5c4bf68d70824462409f"
+      appkey: config.appkey,
     };
     const { role_type, roomId, name, room_type } = this.state;
     this.setState({
-      loading: true
+      loading: true,
     });
     let param = {
       room_type: room_type - 0,
-      role_type: room_type == 0 ? 2 : role_type - 0, 
+      role_type: room_type == 0 ? 2 : role_type - 0,
       roomId,
       name,
-      ...appData
+      ...appData,
     };
     this.joinIM(param);
   };
 
   //加入im房间
-  joinIM(param){
-    createClient(appData.appId)
-    let type = 'admin'
-    if(param.room_type == 1){
+  joinIM(param) {
+    createClient(appData.appId);
+    let type = "admin";
+    if (param.room_type == 1) {
       //大班课
-      type = param.role_type == 2 ? 'admin' : 'default'
+      type = param.role_type == 2 ? "admin" : "default";
     }
-    imClient.joinRoom(
-      param.roomId,
-      param.userId,
-      type,
-      param.name,
-      (data) => { 
-        imClient.createWhite(whiteData => {
-          let { uuid, token } = whiteData;
-          paramServer.setParam(
-            Object.assign(
-              {
-                defaultList: data.defaultUsers,
-                adminList: data.adminUsers,
-                roomInfo: data.roomInfo,
-                Token: token,
-                Uuid: uuid
-              },
-              param
-            )
-          );
-          this.setState({
-            loading: false
-          });
-          this.props.history.push({ pathname: `/class` });
-        })
-      }
-    )
-  }
-  changeRoomtype = e => {
-    this.setState({
-      room_type: e
-    });
-    if(e === 0){
-      this.setState({
-        userTypeStyle: 'none',
-        role_type:'2'
+    imClient.joinRoom(param.roomId, param.userId, type, param.name, (data) => {
+      imClient.createWhite((whiteData) => {
+        let { uuid, token } = whiteData;
+        paramServer.setParam(
+          Object.assign(
+            {
+              defaultList: data.defaultUsers,
+              adminList: data.adminUsers,
+              roomInfo: data.roomInfo,
+              Token: token,
+              Uuid: uuid,
+            },
+            param
+          )
+        );
+        this.setState({
+          loading: false,
+        });
+        this.props.history.push({ pathname: `/class` });
       });
-    }else{
+    });
+  }
+  changeRoomtype = (e) => {
+    this.setState({
+      room_type: e,
+    });
+    if (e === 0) {
       this.setState({
-        userTypeStyle: 'block',
-        role_type:'1'
+        userTypeStyle: "none",
+        role_type: "2",
+      });
+    } else {
+      this.setState({
+        userTypeStyle: "block",
+        role_type: "1",
       });
     }
   };
@@ -197,23 +196,22 @@ class Login extends React.Component {
                         onChange={this.changName}
                       />
                     </Item>
-                        
-                    {room_type == 1 ?
+
+                    {room_type == 1 ? (
                       <Item label="">
-                      <Radio.Group
-                        onChange={this.changeCharacter}
-                        value={role_type}
-                        style={{display:this.state.userTypeStyle}}
-                      >
-                        {formLable.character.map((v, index) => (
-                          <Radio key={index} value={v.key}>
-                            {v.value}
-                          </Radio>
-                        ))}
-                      </Radio.Group>
-                    </Item> : null
-                    }
-                    
+                        <Radio.Group
+                          onChange={this.changeCharacter}
+                          value={role_type}
+                          style={{ display: this.state.userTypeStyle }}
+                        >
+                          {formLable.character.map((v, index) => (
+                            <Radio key={index} value={v.key}>
+                              {v.value}
+                            </Radio>
+                          ))}
+                        </Radio.Group>
+                      </Item>
+                    ) : null}
                   </Form>
                   <Button className="submit_btn" onClick={this.joinRoom}>
                     <span className="text">{formLable.submit}</span>
