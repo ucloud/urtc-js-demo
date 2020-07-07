@@ -22,7 +22,7 @@ yarn start
 
 ## 简单步骤
 ### 1. 获取 token
- [ucloud 控制台获取](https://console.ucloud.cn/urtc/manage) ，然后修改 config 下的 index.js 文件 
+ [ucloud 控制台获取](https://console.ucloud.cn/urtc/manage)， 得到 appId 和 appKey。然后修改 config 下的 index.js 文件 
 ### 2. 创建一个 URTC Client
 
     htmlVideoElement.srcObject = stream.mediaStream;
