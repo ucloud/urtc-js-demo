@@ -31,6 +31,7 @@ const client = new Client(appId, appKey); // 默认为直播模式（大班课�
 ```
 ### 3. 监听流事件
 
+```
 client.on('stream-published', (stream) => {
     htmlVideoElement.srcObject = stream.mediaStream;
 }); // 监听本地流发布成功事件，此事件在当前用户执行 publish 后，与服务器经多次协商，建立好连接后，会触发此事件
