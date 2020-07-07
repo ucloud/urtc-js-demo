@@ -67,7 +67,10 @@ class Login extends React.Component {
   };
 
   joinRoom = () => {
-    console.log(config.appId, config.appkey);
+    if (!config.appId || !config.appkey) {
+      alert("请填写appId 或 appkey");
+      return;
+    }
     appData = {
       appId: config.appId,
       userId: randNum(8),
