@@ -1,0 +1,41 @@
+.login-wrapper{
+    position: fixed;
+    left: 50%;
+    top: 48%;
+    margin-left: -125px;
+    z-index: 10;
+}
+.room-id{
+    width: 160px;
+    height: 30px;
+    padding: 5px;
+    border: 1px solid #9fa7dc;
+    border-radius: 4px;
+    font-size: 14px;
+    vertical-align: middle;
+}
+.join-in{
+    width: 80px;
+    height: 42px;
+    border: 1px solid #9fa7dc;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    vertical-align: middle;
+}
+.active-btn{
+    margin-top: 65px;
+}
+.active-btn button{
+    width: 95px;
+    height: 30px;
+    background: #eee;
+    font-size: 12px;
+    border: 1px solid #9fa7dc;
+    border-radius: 4px;
+    cursor: pointer;
+    vertical-align: middle;
+}
+.detecting{
+    margin-left: 65px;
+}

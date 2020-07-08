@@ -1,0 +1,44 @@
+{
+  "name": "urtc-common-demo",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
+    "@ucloud-fe/react-components": "^0.6.16",
+    "react": "^15.6.2",
+    "react-dom": "^15.6.2",
+    "react-player": "1.12.0",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "3.4.1",
+    "styled-components": "^3.4.10",
+    "urtc-sdk": "^1.5.14"
+  },
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-app-rewired eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "babel-plugin-import": "^1.13.0",
+    "customize-cra": "^1.0.0",
+    "react-app-rewired": "^2.1.6"
+  }
+}
