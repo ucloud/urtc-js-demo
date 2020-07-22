@@ -6,7 +6,6 @@
 /.history
 /.pnp
 .pnp.js
-package-lock.json
 # testing
 /coverage
 /urtc-sdk-web
