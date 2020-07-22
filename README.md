@@ -2,11 +2,22 @@
 
 此 demo 网址：https://demo.urtc.com.cn/
 
-## 步骤 1：使用 npm 引入 SDK
+## 步骤 1：使用 yarn 引入 SDK  (npm 在windows环境可能会安装依赖失败)
+
+### 安装  yarn [下载安装包](https://yarn.bootcss.com/docs/install),或者通过npm 安装
+```
+npm install -g yarn --registry=https://registry.npm.taobao.org
 
 ```
-npm install
-或    
+然后配置源
+```
+yarn config set registry https://registry.npm.taobao.org -g
+
+yarn config set sass_binary_site http://cdn.npm.taobao.org/dist/node-sass -g
+
+```
+### 然后执行
+```
 yarn
 
 ```
@@ -14,10 +25,7 @@ yarn
 ## 步骤 2：启动
 
 ```
-npm run start 
-或
 yarn start 
-    
 ```
 
 ## 简单步骤
